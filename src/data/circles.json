@@ -1,0 +1,131 @@
+{
+  "center": {
+    "title": "The Progenitor",
+    "subtitle": "The Founding Estate",
+    "image": "/images/demo/progenitor.svg",
+    "color": "#b4491c",
+    "description": [
+      "Every line begins with a single vessel. The Progenitor is the first of the series, the one every later work answers to.",
+      "It was made over one long winter, carved down layer by layer until only the structure was left. Each heir that follows takes a gesture, a colour or a scar from it and carries it forward."
+    ],
+    "details": [
+      { "label": "Year", "value": "2021" },
+      { "label": "Medium", "value": "Oil on linen" },
+      { "label": "Edition", "value": "1/1" }
+    ]
+  },
+  "layers": [
+    [
+      {
+        "title": "Ember Covenant",
+        "subtitle": "Rhea Lindqvist",
+        "image": "/images/demo/ember-covenant.svg",
+        "color": "#a9441a",
+        "description": [
+          "The first heir is darker than its parent, and its eyes are lit from inside.",
+          "Ember Covenant takes up the Progenitor's horns and burns them down to the root. It is a promise kept by fire."
+        ],
+        "details": [
+          { "label": "Year", "value": "2022" },
+          { "label": "Medium", "value": "Oil on panel" }
+        ]
+      },
+      {
+        "title": "Tidewater Oath",
+        "subtitle": "Okon Adeyemi",
+        "image": "/images/demo/tidewater-oath.svg",
+        "color": "#3a6a70",
+        "description": [
+          "Salt water wears the bone into lace. Tidewater Oath is the inheritance that went out to sea and came back changed.",
+          "The surface is covered in channels, maps of every current the vessel crossed before it washed ashore."
+        ],
+        "details": [
+          { "label": "Year", "value": "2022" },
+          { "label": "Medium", "value": "Oil and wax" }
+        ]
+      },
+      {
+        "title": "Ochre Testament",
+        "subtitle": "Mirela Vance",
+        "image": "/images/demo/ochre-testament.svg",
+        "color": "#c38d1f",
+        "description": [
+          "Gilded and hollow-eyed, the Ochre Testament keeps the outward form and lets the inner light go.",
+          "It is the heir that chose ceremony over sight, and it remembers the most."
+        ],
+        "details": [
+          { "label": "Year", "value": "2022" },
+          { "label": "Medium", "value": "Gold leaf on gesso" }
+        ]
+      }
+    ],
+    [
+      {
+        "title": "Salt & Lineage",
+        "subtitle": "Theo Marchetti",
+        "image": "/images/demo/salt-and-lineage.svg",
+        "color": "#cfc6b8",
+        "description": [
+          "Bleached almost to nothing, Salt & Lineage is a record of everything the line survived.",
+          "The fine black veins are not cracks. They are the names of every hand that held it."
+        ],
+        "details": [{ "label": "Year", "value": "2023" }]
+      },
+      {
+        "title": "The Quiet Heir",
+        "subtitle": "Anouk Ferreira",
+        "image": "/images/demo/the-quiet-heir.svg",
+        "color": "#26333c",
+        "description": [
+          "Charcoal and ram-horned, the Quiet Heir never asked to inherit anything.",
+          "It watches from the outer ring, patient and unlit, waiting for the others to finish speaking."
+        ],
+        "details": [{ "label": "Year", "value": "2023" }]
+      },
+      {
+        "title": "Cinder Psalm",
+        "subtitle": "Jonah Whitlock",
+        "image": "/images/demo/cinder-psalm.svg",
+        "color": "#7a2416",
+        "description": [
+          "A hymn sung through clenched teeth. Cinder Psalm carries the Ember Covenant's fire into terracotta.",
+          "Its glow is quieter but lasts longer, like a coal banked for the night."
+        ],
+        "details": [{ "label": "Year", "value": "2023" }]
+      },
+      {
+        "title": "Verdigris Crown",
+        "subtitle": "Sabine Okafor",
+        "image": "/images/demo/verdigris-crown.svg",
+        "color": "#4d7563",
+        "description": [
+          "Copper turns green when it is left alone long enough. The Verdigris Crown is what neglect makes beautiful.",
+          "Its curled horns close in on themselves like hands that have finished praying."
+        ],
+        "details": [{ "label": "Year", "value": "2024" }]
+      },
+      {
+        "title": "Lantern of Bone",
+        "subtitle": "Elias Park",
+        "image": "/images/demo/lantern-of-bone.svg",
+        "color": "#b37a32",
+        "description": [
+          "Soft and rose-coloured, with something burning behind the eyes.",
+          "The Lantern of Bone is carried at the front of the procession so the rest of the line can find its way home."
+        ],
+        "details": [{ "label": "Year", "value": "2024" }]
+      },
+      {
+        "title": "The Last Surveyor",
+        "subtitle": "Ines Calder",
+        "image": "/images/demo/the-last-surveyor.svg",
+        "color": "#5d7d92",
+        "description": [
+          "The last Surveyor mapped every ring of the succession before closing the circle.",
+          "Its gilded skull is etched with routes that lead back, without exception, to the centre."
+        ],
+        "details": [{ "label": "Year", "value": "2024" }]
+      }
+    ]
+  ]
+}

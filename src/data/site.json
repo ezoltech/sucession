@@ -1,0 +1,15 @@
+{
+  "brand": "Succession",
+  "breadcrumb": "Archive",
+  "collectionTitle": "The Succession",
+  "ownerLabel": "In the collection of",
+  "owner": "The Founding Estate",
+  "intro": [
+    ["One vessel at the centre", "Its heirs set in rings", "Each one carries", "A fragment of the first"],
+    ["Hover to read a name", "Click to step inside", "Follow the line outward", "Ring by ring"]
+  ],
+  "notes": [
+    "The Succession is a radial archive. One work sits at the centre and its heirs are arranged around it in concentric layers.",
+    "The layers and the number of circles in each one are set in src/data/layers.json. The title, image, collector and notes for every circle are set in src/data/circles.json."
+  ]
+}
