@@ -101,6 +101,20 @@
         "image": "/images/demo/elizabeth.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሃና  (እማ ለ እግዝእትነ ቅድስት በክልኤ ማርያም ወላዲተ አምላክ)",
+        "subtitle": "",
+        "image": "/images/demo/anna.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ፎጢና ሰማዕቱ ለ ኢየሱስ ክርስቶስ",
+        "subtitle": "",
+        "image": "/images/demo/berzedan.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
