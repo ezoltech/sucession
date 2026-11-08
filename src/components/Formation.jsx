@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ease } from "../lib/easing";
 import { NODE_R } from "../lib/formation";
 
@@ -14,10 +22,16 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 // Semicircle through the bottom of a circle, left → right, so text reads upright.
-const bottomArc = (x, y, R) => `M ${x - R} ${y} A ${R} ${R} 0 0 0 ${x + R} ${y}`;
+const bottomArc = (x, y, R) =>
+  `M ${x - R} ${y} A ${R} ${R} 0 0 0 ${x + R} ${y}`;
+// Semicircle through the top of a circle, left → right, so layer names read upright.
+const topArc = (R) => `M ${-R} 0 A ${R} ${R} 0 0 1 ${R} 0`;
 
 function sector(cx, cy, r0, r1, a0, a1) {
-  const p = (r, a) => [cx + r * Math.cos((a * Math.PI) / 180), cy + r * Math.sin((a * Math.PI) / 180)];
+  const p = (r, a) => [
+    cx + r * Math.cos((a * Math.PI) / 180),
+    cy + r * Math.sin((a * Math.PI) / 180),
+  ];
   const [x0, y0] = p(r1, a0);
   const [x1, y1] = p(r1, a1);
   const [x2, y2] = p(r0, a1);
@@ -35,10 +49,22 @@ function labelHalfAngle(n) {
 }
 
 const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-export default function Formation({ formation, stage, selectedId, hoveredId, onHover, onSelect, onBackground }) {
-  const { nodes, rings, guides, extent } = formation;
+export default function Formation({
+  formation,
+  stage,
+  selectedId,
+  hoveredId,
+  activeLayer = null,
+  activeColor = null,
+  onHover,
+  onSelect,
+  onSelectLayer,
+  onBackground,
+}) {
+  const { nodes, rings, guides, extent, fade } = formation;
   const svgRef = useRef(null);
   const camGroupRef = useRef(null);
   const cam = useRef({ x: 0, y: 0, s: 1 });
@@ -47,10 +73,33 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
   const blur = useRef(0);
   const dragged = useRef(false);
   const initialised = useRef(false);
-  const [labelsOn, setLabelsOn] = useState(false);
-  const labelsOnRef = useRef(false);
+  // One "1"/"0" per layer (index 0 = centre): does that layer's circle labels show at this zoom?
+  const [labelKey, setLabelKey] = useState("");
+  const labelKeyRef = useRef("");
+  const [hoverLayer, setHoverLayer] = useState(null);
 
-  const selected = useMemo(() => nodes.find((n) => n.id === selectedId) || null, [nodes, selectedId]);
+  const selected = useMemo(
+    () => nodes.find((n) => n.id === selectedId) || null,
+    [nodes, selectedId],
+  );
+  const active = useMemo(
+    () => (activeLayer ? rings[activeLayer - 1] || null : null),
+    [rings, activeLayer],
+  );
+
+  // Circle radius (world units) that decides when a layer's labels appear. Capped at NODE_R, so
+  // layers with normal-sized circles behave exactly as before; small circles just need more zoom.
+  const labelBase = useMemo(
+    () => [
+      Math.min(nodes[0].r, NODE_R),
+      ...rings.map((r) => Math.min(r.r, NODE_R)),
+    ],
+    [nodes, rings],
+  );
+  const minR = useMemo(
+    () => Math.min(NODE_R, ...rings.map((r) => r.r)),
+    [rings],
+  );
 
   const fitScale = useCallback(
     (st) => clamp((Math.min(st.w, st.h) * 0.92) / (2 * extent), 0.05, 20),
@@ -58,10 +107,20 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
   );
 
   const targetFor = useCallback(
-    (node, st) => {
+    (node, st, layer) => {
+      if (!node && layer) {
+        // a whole layer is selected: frame its string and its name
+        const reach = layer.label.r + layer.label.fs * 1.6;
+        const s = clamp((Math.min(st.w, st.h) * 0.92) / (2 * reach), 0.05, 20);
+        return { x: 0, y: 0, s: Math.max(s, fitScale(st)) };
+      }
       if (!node) return { x: 0, y: 0, s: fitScale(st) };
       const s = (Math.min(st.w, st.h) * 0.19) / node.r;
-      return { x: node.x, y: node.y + node.r * 0.2, s: Math.max(s, fitScale(st) * 1.4) };
+      return {
+        x: node.x,
+        y: node.y + node.r * 0.2,
+        s: Math.max(s, fitScale(st) * 1.4),
+      };
     },
     [fitScale],
   );
@@ -71,14 +130,19 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
     if (!g) return;
     const st = stageRef.current;
     const { x, y, s } = cam.current;
-    g.setAttribute("transform", `translate(${st.x + st.w / 2} ${st.y + st.h / 2}) scale(${s}) translate(${-x} ${-y})`);
+    g.setAttribute(
+      "transform",
+      `translate(${st.x + st.w / 2} ${st.y + st.h / 2}) scale(${s}) translate(${-x} ${-y})`,
+    );
     g.style.setProperty("--px", `${1 / s}px`);
-    const on = s * NODE_R > LABEL_ZOOM_PX;
-    if (on !== labelsOnRef.current) {
-      labelsOnRef.current = on;
-      setLabelsOn(on);
+    const key = labelBase
+      .map((b) => (s * b > LABEL_ZOOM_PX ? "1" : "0"))
+      .join("");
+    if (key !== labelKeyRef.current) {
+      labelKeyRef.current = key;
+      setLabelKey(key);
     }
-  }, []);
+  }, [labelBase]);
 
   const setBlur = useCallback((v) => {
     blur.current = v;
@@ -117,7 +181,9 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
 
         // motion blur proportional to on-screen speed, like the reference's WebGL smear
         const dt = Math.max(8, now - prev.t);
-        const move = Math.hypot(x * s - prev.x * prev.s, y * s - prev.y * prev.s) + Math.abs(Math.log(s / prev.s)) * 420;
+        const move =
+          Math.hypot(x * s - prev.x * prev.s, y * s - prev.y * prev.s) +
+          Math.abs(Math.log(s / prev.s)) * 420;
         const speed = (move * 16) / dt;
         const want = k < 1 ? clamp((speed - 3) * 0.11, 0, 7) : 0;
         setBlur(lerp(blur.current, want, 0.45));
@@ -131,10 +197,10 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
     [apply, setBlur],
   );
 
-  // Camera follows the selection and the free stage area
+  // Camera follows the selection (a circle or a whole layer) and the free stage area
   useLayoutEffect(() => {
     stageRef.current = stage;
-    const target = targetFor(selected, stage);
+    const target = targetFor(selected, stage, active);
     if (!initialised.current) {
       initialised.current = true;
       cam.current = target;
@@ -142,7 +208,7 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
       return;
     }
     flyTo(target, 1000);
-  }, [stage, selected, targetFor, flyTo, apply]);
+  }, [stage, selected, active, targetFor, flyTo, apply]);
 
   useEffect(() => () => cancelAnimationFrame(flight.current), []);
 
@@ -156,7 +222,13 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
       if (e.button !== 0) return;
       cancelAnimationFrame(flight.current);
       setBlur(0);
-      start = { px: e.clientX, py: e.clientY, x: cam.current.x, y: cam.current.y, id: e.pointerId };
+      start = {
+        px: e.clientX,
+        py: e.clientY,
+        x: cam.current.x,
+        y: cam.current.y,
+        id: e.pointerId,
+      };
       dragged.current = false;
     };
     const move = (e) => {
@@ -169,7 +241,11 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
         svg.classList.add("is-grabbing");
       }
       if (dragged.current) {
-        cam.current = { ...cam.current, x: start.x - dx / cam.current.s, y: start.y - dy / cam.current.s };
+        cam.current = {
+          ...cam.current,
+          x: start.x - dx / cam.current.s,
+          y: start.y - dy / cam.current.s,
+        };
         apply();
       }
     };
@@ -177,7 +253,8 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
       if (!start || e.pointerId !== start.id) return;
       start = null;
       svg.classList.remove("is-grabbing");
-      if (svg.hasPointerCapture?.(e.pointerId)) svg.releasePointerCapture(e.pointerId);
+      if (svg.hasPointerCapture?.(e.pointerId))
+        svg.releasePointerCapture(e.pointerId);
     };
     const wheel = (e) => {
       e.preventDefault();
@@ -186,7 +263,7 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
       const st = stageRef.current;
       const { x, y, s } = cam.current;
       const min = fitScale(st) * 0.6;
-      const max = (Math.min(st.w, st.h) * 0.5) / NODE_R;
+      const max = (Math.min(st.w, st.h) * 0.5) / minR;
       const ns = clamp(s * Math.exp(-e.deltaY * 0.0016), min, max);
       const rect = svg.getBoundingClientRect();
       const mx = e.clientX - rect.left - (st.x + st.w / 2);
@@ -210,7 +287,7 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
       window.removeEventListener("pointercancel", up);
       svg.removeEventListener("wheel", wheel);
     };
-  }, [apply, fitScale, setBlur]);
+  }, [apply, fitScale, setBlur, minR]);
 
   const handleBackgroundClick = (e) => {
     if (dragged.current) return;
@@ -218,53 +295,205 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
     onBackground?.();
   };
 
-  const nodeDelay = (n) => (n.layer === 0 ? 120 : 220 + n.sweep * 560 + (n.layer - 1) * 70);
+  // clicking a layer string, one of its threads, or its name selects that layer
+  const pickLayer = (layer) => (e) => {
+    e.stopPropagation();
+    if (!dragged.current) onSelectLayer?.(layer);
+  };
+  const hoverProps = (layer) => ({
+    onPointerEnter: () => setHoverLayer(layer),
+    onPointerLeave: () => setHoverLayer(null),
+  });
+
+  const nodeDelay = (n) =>
+    n.layer === 0 ? 120 : 220 + n.sweep * 560 + (n.layer - 1) * 70;
   const big = extent * 4;
+
+  // Soft edge for the thread pattern: fully visible up to `fadeFrom`, gone at `fadeTo`
+  const fadeTo = fade?.to ?? extent;
+  const fadeFrom = fade?.from ?? extent * 0.9;
+
+  const labelOn = (layer) => labelKey[layer] === "1";
+  const anyLabels = labelKey.includes("1");
+  const nodeLabelVisible = (n) =>
+    labelOn(n.layer) || n.id === hoveredId || n.id === selectedId;
+
+  // Static geometry is built once; only the on/off state of the label gaps changes on hover or zoom.
+  const holes = useMemo(
+    () =>
+      nodes.map((n) => (
+        <circle key={n.id} cx={n.x} cy={n.y} r={n.r * 1.2} fill="black" />
+      )),
+    [nodes],
+  );
+  const gapGeo = useMemo(
+    () =>
+      nodes.map((n) => {
+        const half = labelHalfAngle(n);
+        return {
+          id: n.id,
+          layer: n.layer,
+          d: sector(n.x, n.y, n.r * 1.12, n.r * 1.64, 90 - half, 90 + half),
+        };
+      }),
+    [nodes],
+  );
+  // gaps cut into the hairlines beneath every visible label
+  const labelGaps = gapGeo.map((g) => (
+    <path
+      key={`gap-${g.id}`}
+      className="label-gap"
+      style={{
+        opacity:
+          labelOn(g.layer) || g.id === hoveredId || g.id === selectedId ? 1 : 0,
+      }}
+      d={g.d}
+      fill="black"
+    />
+  ));
+
+  const handleNodeSelect = useCallback(
+    (id) => {
+      if (!dragged.current) onSelect(id);
+    },
+    [onSelect],
+  );
 
   return (
     <div className="stage" aria-label="Formation">
-      <svg ref={svgRef} className="formation" onClick={handleBackgroundClick} role="presentation">
+      <svg
+        ref={svgRef}
+        className="formation"
+        onClick={handleBackgroundClick}
+        role="presentation"
+      >
         <defs>
           <clipPath id="circle-clip" clipPathUnits="objectBoundingBox">
             <circle cx="0.5" cy="0.5" r="0.5" />
           </clipPath>
 
+          {/* Fades the thread pattern out around the outermost layer so it always fits the formation */}
+          <radialGradient
+            id="thread-fade-grad"
+            gradientUnits="userSpaceOnUse"
+            cx={0}
+            cy={0}
+            r={fadeTo}
+          >
+            <stop offset="0" stopColor="white" />
+            <stop
+              offset={clamp(fadeFrom / fadeTo, 0, 0.999)}
+              stopColor="white"
+            />
+            <stop offset="1" stopColor="black" />
+          </radialGradient>
+          <mask
+            id="thread-fade"
+            maskUnits="userSpaceOnUse"
+            x={-big}
+            y={-big}
+            width={big * 2}
+            height={big * 2}
+          >
+            <rect
+              x={-big}
+              y={-big}
+              width={big * 2}
+              height={big * 2}
+              fill="url(#thread-fade-grad)"
+            />
+          </mask>
+
           {/* Cuts the hairlines around every circle and beneath visible labels */}
-          <mask id="line-mask" maskUnits="userSpaceOnUse" x={-big} y={-big} width={big * 2} height={big * 2}>
-            <rect x={-big} y={-big} width={big * 2} height={big * 2} fill="white" />
-            {nodes.map((n) => (
-              <circle key={n.id} cx={n.x} cy={n.y} r={n.r * 1.2} fill="black" />
-            ))}
-            {nodes.map((n) => {
-              const half = labelHalfAngle(n);
-              const visible = labelsOn || n.id === hoveredId || n.id === selectedId;
-              return (
-                <path
-                  key={`gap-${n.id}`}
-                  className="label-gap"
-                  style={{ opacity: visible ? 1 : 0 }}
-                  d={sector(n.x, n.y, n.r * 1.12, n.r * 1.64, 90 - half, 90 + half)}
-                  fill="black"
-                />
-              );
-            })}
+          <mask
+            id="line-mask"
+            maskUnits="userSpaceOnUse"
+            x={-big}
+            y={-big}
+            width={big * 2}
+            height={big * 2}
+          >
+            <rect
+              x={-big}
+              y={-big}
+              width={big * 2}
+              height={big * 2}
+              fill="white"
+            />
+            {holes}
+            {labelGaps}
+          </mask>
+
+          {/* Same, but only beneath labels: the highlighted string runs behind the circles instead */}
+          <mask
+            id="label-mask"
+            maskUnits="userSpaceOnUse"
+            x={-big}
+            y={-big}
+            width={big * 2}
+            height={big * 2}
+          >
+            <rect
+              x={-big}
+              y={-big}
+              width={big * 2}
+              height={big * 2}
+              fill="white"
+            />
+            {labelGaps}
           </mask>
 
           {nodes.map((n) => (
             <g key={`arcs-${n.id}`}>
-              <path id={`arc-t-${n.id}`} d={bottomArc(n.x, n.y, n.r * TITLE_K)} />
+              <path
+                id={`arc-t-${n.id}`}
+                d={bottomArc(n.x, n.y, n.r * TITLE_K)}
+              />
               <path id={`arc-s-${n.id}`} d={bottomArc(n.x, n.y, n.r * SUB_K)} />
             </g>
+          ))}
+
+          {/* Where each layer's name is written */}
+          {rings.map((ring) => (
+            <path
+              key={`layer-arc-${ring.layer}`}
+              id={`layer-arc-${ring.layer}`}
+              d={topArc(ring.label.r)}
+            />
           ))}
         </defs>
 
         <g ref={camGroupRef} className="camera">
-          <g className="lines" mask="url(#line-mask)">
-            {guides.map((g, i) => (
-              <DrawCircle key={g.id} className="hair guide" cx={g.x} cy={g.y} r={g.r} delay={420 + i * 120} duration={1300} />
-            ))}
+          <g
+            className="lines"
+            mask="url(#line-mask)"
+            style={{ "--hl": activeColor || undefined }}
+          >
+            {/* One thread per circle of every layer, each passing through its predecessor */}
+            <g className="threads" mask="url(#thread-fade)">
+              {guides.map((g, i) => (
+                <DrawCircle
+                  key={g.id}
+                  className={`hair guide guide-l${g.layer ?? 1}${g.layer === activeLayer ? " is-active" : ""}`}
+                  cx={g.x}
+                  cy={g.y}
+                  r={g.r}
+                  delay={g.delay ?? 420 + i * 120}
+                  duration={1300}
+                  style={{ "--ga": g.alpha ?? 1 }}
+                />
+              ))}
+            </g>
             {rings.map((ring, i) => (
-              <DrawCircle key={`orbit-${ring.layer}`} className="hair orbit" cx={0} cy={0} r={ring.R} delay={i * 110} duration={1000} />
+              <DrawCircle
+                key={`orbit-${ring.layer}`}
+                className={`hair orbit${hoverLayer === ring.layer ? " is-hover" : ""}${ring.layer === activeLayer ? " is-active" : ""}`}
+                cx={0}
+                cy={0}
+                r={ring.R}
+                delay={i * 110}
+                duration={1000}
+              />
             ))}
             {nodes
               .filter((n) => n.layer <= 1)
@@ -281,6 +510,82 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
               ))}
           </g>
 
+          {/* The clicked layer's string, lit in a random theme colour; it only exists while a layer is selected */}
+          {active && activeColor && (
+            <g
+              className="string-hl"
+              mask="url(#label-mask)"
+              style={{ "--hl": activeColor }}
+            >
+              <DrawCircle
+                key={`hl-${active.layer}-${activeColor}`}
+                className="hair hl-orbit"
+                cx={0}
+                cy={0}
+                r={active.R}
+                delay={0}
+                duration={900}
+              />
+            </g>
+          )}
+
+          {/* Invisible, fatter copies of the strings and threads so they are easy to click */}
+          <g className="hits">
+            {rings.map((ring) => (
+              <circle
+                key={`hit-${ring.layer}`}
+                className="hit hit-orbit"
+                cx={0}
+                cy={0}
+                r={ring.R}
+                role="button"
+                aria-label={`Select ${ring.name}`}
+                onClick={pickLayer(ring.layer)}
+                {...hoverProps(ring.layer)}
+              />
+            ))}
+            {guides.map((g) => (
+              <circle
+                key={`hit-${g.id}`}
+                className="hit hit-guide"
+                cx={g.x}
+                cy={g.y}
+                r={g.r}
+                onClick={pickLayer(g.layer)}
+                {...hoverProps(g.layer)}
+              />
+            ))}
+          </g>
+
+          {/* Layer names, written on a curve in the free band beside each layer's string */}
+          <g className="layer-names">
+            {rings.map((ring) => {
+              const isActive = ring.layer === activeLayer;
+              const show = !anyLabels || isActive || hoverLayer === ring.layer;
+              return (
+                <text
+                  key={`name-${ring.layer}`}
+                  className={`layer-name${show ? " is-on" : ""}${isActive ? " is-active" : ""}`}
+                  style={{
+                    fontSize: ring.label.fs,
+                    letterSpacing: ring.label.fs * 0.2,
+                    "--hl": isActive ? activeColor || undefined : undefined,
+                  }}
+                  onClick={pickLayer(ring.layer)}
+                  {...hoverProps(ring.layer)}
+                >
+                  <textPath
+                    href={`#layer-arc-${ring.layer}`}
+                    startOffset="50%"
+                    textAnchor="middle"
+                  >
+                    {ring.name}
+                  </textPath>
+                </text>
+              );
+            })}
+          </g>
+
           {nodes.map((n) => (
             <Node
               key={n.id}
@@ -288,11 +593,9 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
               delay={nodeDelay(n)}
               hovered={n.id === hoveredId}
               selected={n.id === selectedId}
-              labelVisible={labelsOn || n.id === hoveredId || n.id === selectedId}
+              labelVisible={nodeLabelVisible(n)}
               onHover={onHover}
-              onSelect={(id) => {
-                if (!dragged.current) onSelect(id);
-              }}
+              onSelect={handleNodeSelect}
             />
           ))}
         </g>
@@ -301,7 +604,7 @@ export default function Formation({ formation, stage, selectedId, hoveredId, onH
   );
 }
 
-function DrawCircle({ className, cx, cy, r, delay, duration }) {
+function DrawCircle({ className, cx, cy, r, delay, duration, style }) {
   const len = 2 * Math.PI * r;
   return (
     <circle
@@ -310,12 +613,25 @@ function DrawCircle({ className, cx, cy, r, delay, duration }) {
       cy={cy}
       r={r}
       transform={`rotate(-90 ${cx} ${cy})`}
-      style={{ "--len": len, "--delay": `${delay}ms`, "--dur": `${duration}ms` }}
+      style={{
+        "--len": len,
+        "--delay": `${delay}ms`,
+        "--dur": `${duration}ms`,
+        ...style,
+      }}
     />
   );
 }
 
-function Node({ node: n, delay, hovered, selected, labelVisible, onHover, onSelect }) {
+const Node = memo(function Node({
+  node: n,
+  delay,
+  hovered,
+  selected,
+  labelVisible,
+  onHover,
+  onSelect,
+}) {
   const { data } = n;
   const origin = { transformOrigin: `${n.x}px ${n.y}px` };
   const tfs = n.r * TITLE_FS;
@@ -338,7 +654,13 @@ function Node({ node: n, delay, hovered, selected, labelVisible, onHover, onSele
       <g className="node-in" style={{ ...origin, "--delay": `${delay}ms` }}>
         <circle className="select-ring" cx={n.x} cy={n.y} r={n.r * SELECT_K} />
         <g className="node-body" style={origin}>
-          <circle className="node-fill" cx={n.x} cy={n.y} r={n.r} style={data.color ? { fill: data.color } : undefined} />
+          <circle
+            className="node-fill"
+            cx={n.x}
+            cy={n.y}
+            r={n.r}
+            style={data.color ? { fill: data.color } : undefined}
+          />
           {data.image && (
             <image
               href={data.image}
@@ -355,14 +677,28 @@ function Node({ node: n, delay, hovered, selected, labelVisible, onHover, onSele
       </g>
 
       <g className={`label${labelVisible ? " is-on" : ""}`} aria-hidden="true">
-        <text className="label-title" style={{ fontSize: tfs, letterSpacing: tfs * 0.01 }}>
-          <textPath href={`#arc-t-${n.id}`} startOffset="50%" textAnchor="middle">
+        <text
+          className="label-title"
+          style={{ fontSize: tfs, letterSpacing: tfs * 0.01 }}
+        >
+          <textPath
+            href={`#arc-t-${n.id}`}
+            startOffset="50%"
+            textAnchor="middle"
+          >
             {data.title}
           </textPath>
         </text>
         {data.subtitle && (
-          <text className="label-sub" style={{ fontSize: sfs, letterSpacing: sfs * 0.14 }}>
-            <textPath href={`#arc-s-${n.id}`} startOffset="50%" textAnchor="middle">
+          <text
+            className="label-sub"
+            style={{ fontSize: sfs, letterSpacing: sfs * 0.14 }}
+          >
+            <textPath
+              href={`#arc-s-${n.id}`}
+              startOffset="50%"
+              textAnchor="middle"
+            >
               {data.subtitle}
             </textPath>
           </text>
@@ -370,4 +706,4 @@ function Node({ node: n, delay, hovered, selected, labelVisible, onHover, onSele
       </g>
     </g>
   );
-}
+});

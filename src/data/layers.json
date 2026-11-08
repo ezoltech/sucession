@@ -1,19 +1,119 @@
 [
   {
-    "name": "First Heirs",
-    "circles": 3
+    "name": "፩፪ቱ ሃዋርያት ቅዱሳን",
+    "circles": 12,
+    "description": ["Group description"],
+    "members": [
+      {
+        "name": "ሊቀ ሃዋርያት ቅዱስ ጴጥሮስ",
+        "subtitle": "Rock",
+        "image": "/images/demo/peter.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ እንድርያስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/andrew.png",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ያዕቆብ ሃዋርያ ወልደ ዘብዴዎስ",
+        "subtitle": "",
+        "image": "/images/demo/jacobse.jpeg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ዮሃንስ ወንጌላዊ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/john.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ በርተሎሜዎስ ሃዋርያ (ናትናኤል)",
+        "subtitle": "",
+        "image": "/images/demo/bartholemew.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ፊልጶስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/philip.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ቶማስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/thomas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ያዕቆብ  ሃዋርያ ወልደ እልፍዮስ",
+        "subtitle": "",
+        "image": "/images/demo/jamesalp.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ማቴዎስ ወንጌላዊ ሃዋርያ ",
+        "subtitle": "",
+        "image": "/images/demo/matthew.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ይሁዳ ሃዋርያ (እኁሁ ለእግዚእነ) ",
+        "subtitle": "",
+        "image": "/images/demo/jamesbrother.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ስምዖን ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/simon.png",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ማቲያስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/matias.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      }
+    ]
   },
   {
-    "name": "Second Heirs",
-    "circles": 6,
-    "rotation": 30
+    "name": "፫፮ቱ ቅዱሳት አንስት",
+    "circles": 36,
+    "description": "",
+    "members": [
+      {
+        "name": "ቅድስት ኤልሳቤጥ (እሙ ለ መጥምቀ መለኮት)",
+        "subtitle": "",
+        "image": "/images/demo/elizabeth.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      }
+    ]
   },
   {
-    "name": "Third Heirs",
-    "circles": 12
+    "name": "፯፪ቱ አርድዕት ",
+    "circles": 72,
+    "description": "",
+    "members": []
   },
   {
-    "name": "Fourth Heirs",
-    "circles": 24
+    "name": "፫፻፲፰ቱ ርቱዐነ ሃይማኖት",
+    "circles": 318,
+    "description": "",
+    "members": []
   }
 ]
