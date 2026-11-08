@@ -7,84 +7,84 @@
       {
         "name": "ሊቀ ሃዋርያት ቅዱስ ጴጥሮስ",
         "subtitle": "Rock",
-        "image": "/images/demo/peter.jpg",
+        "image": "/sucession/images/demo/peter.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ እንድርያስ ሃዋርያ",
         "subtitle": "",
-        "image": "/images/demo/andrew.png",
+        "image": "/sucession/images/demo/andrew.png",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ያዕቆብ ሃዋርያ ወልደ ዘብዴዎስ",
         "subtitle": "",
-        "image": "/images/demo/jacobse.jpeg",
+        "image": "/sucession/images/demo/jacobse.jpeg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ዮሃንስ ወንጌላዊ ሃዋርያ",
         "subtitle": "",
-        "image": "/images/demo/john.jpg",
+        "image": "/sucession/images/demo/john.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ በርተሎሜዎስ ሃዋርያ (ናትናኤል)",
         "subtitle": "",
-        "image": "/images/demo/bartholemew.jpg",
+        "image": "/sucession/images/demo/bartholemew.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ፊልጶስ ሃዋርያ",
         "subtitle": "",
-        "image": "/images/demo/philip.jpg",
+        "image": "/sucession/images/demo/philip.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ቶማስ ሃዋርያ",
         "subtitle": "",
-        "image": "/images/demo/thomas.jpg",
+        "image": "/sucession/images/demo/thomas.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ያዕቆብ  ሃዋርያ ወልደ እልፍዮስ",
         "subtitle": "",
-        "image": "/images/demo/jamesalp.jpg",
+        "image": "/sucession/images/demo/jamesalp.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ማቴዎስ ወንጌላዊ ሃዋርያ ",
         "subtitle": "",
-        "image": "/images/demo/matthew.jpg",
+        "image": "/sucession/images/demo/matthew.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ይሁዳ ሃዋርያ (እኁሁ ለእግዚእነ) ",
         "subtitle": "",
-        "image": "/images/demo/jamesbrother.jpg",
+        "image": "/sucession/images/demo/jamesbrother.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ስምዖን ሃዋርያ",
         "subtitle": "",
-        "image": "/images/demo/simon.png",
+        "image": "/sucession/images/demo/simon.png",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅዱስ ማቲያስ ሃዋርያ",
         "subtitle": "",
-        "image": "/images/demo/matias.jpg",
+        "image": "/sucession/images/demo/matias.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       }
@@ -98,21 +98,21 @@
       {
         "name": "ቅድስት ኤልሳቤጥ (እሙ ለ መጥምቀ መለኮት)",
         "subtitle": "",
-        "image": "/images/demo/elizabeth.jpg",
+        "image": "/sucession/images/demo/elizabeth.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅድስት ሃና  (እማ ለ እግዝእትነ ቅድስት በክልኤ ማርያም ወላዲተ አምላክ)",
         "subtitle": "",
-        "image": "/images/demo/anna.jpg",
+        "image": "/sucession/images/demo/anna.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {
         "name": "ቅድስት ፎጢና ሳምራዊት",
         "subtitle": "",
-        "image": "/images/demo/berzedan.jpg",
+        "image": "/sucession/images/demo/berzedan.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       }
