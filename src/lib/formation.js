@@ -47,6 +47,16 @@ const HIGHLIGHT_PALETTE = [
   "#3f6f9a", // steel blue
   "#b8780f", // gold ochre
 ];
+// The same family, brighter, so a lit string still pops on the black background of dark mode.
+const HIGHLIGHT_PALETTE_DARK = [
+  "#f08a2c", // orange
+  "#ee6b43", // ember
+  "#e4566b", // oxblood, lifted
+  "#44bfcf", // tidewater
+  "#52c48f", // verdigris
+  "#78aee0", // steel
+  "#f2c14e", // gold
+];
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -106,23 +116,25 @@ export function themeColor(layer, index) {
 /**
  * Random bold highlight colour for a clicked layer string. Always from the theme family
  * (slightly jittered so it is never exactly the same twice) and never close to `prev`.
+ * `dark` picks the brighter set that reads on the dark-mode background.
  */
-export function randomHighlight(prev = null) {
+export function randomHighlight(prev = null, dark = false) {
+  const palette = dark ? HIGHLIGHT_PALETTE_DARK : HIGHLIGHT_PALETTE;
   const hueDist = (a, b) => {
     const d = Math.abs(a - b) % 360;
     return d > 180 ? 360 - d : d;
   };
   const prevHue = prev ? hexToHsl(prev)[0] : -999;
-  const far = HIGHLIGHT_PALETTE.filter(
-    (c) => hueDist(hexToHsl(c)[0], prevHue) > 20,
-  );
-  const pool = far.length ? far : HIGHLIGHT_PALETTE;
+  const far = palette.filter((c) => hueDist(hexToHsl(c)[0], prevHue) > 20);
+  const pool = far.length ? far : palette;
   const base = pool[Math.floor(Math.random() * pool.length)];
   const [h, s, l] = hexToHsl(base);
   return hslToHex(
     h + (Math.random() * 16 - 8),
     clamp(s + (Math.random() * 10 - 5), 35, 90),
-    clamp(l + (Math.random() * 8 - 4), 28, 48),
+    dark
+      ? clamp(l + (Math.random() * 8 - 4), 52, 72)
+      : clamp(l + (Math.random() * 8 - 4), 28, 48),
   );
 }
 

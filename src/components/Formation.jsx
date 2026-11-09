@@ -372,6 +372,15 @@ export default function Formation({
             <circle cx="0.5" cy="0.5" r="0.5" />
           </clipPath>
 
+          {/* Dark mode paints every string and thread with this gold x silver sweep (see --thread-stroke) */}
+          <linearGradient id="thread-metal" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#f2dc96" />
+            <stop offset="0.3" stopColor="#c9a24e" />
+            <stop offset="0.55" stopColor="#e7e4dc" />
+            <stop offset="0.8" stopColor="#b8984f" />
+            <stop offset="1" stopColor="#dcd8cf" />
+          </linearGradient>
+
           {/* Fades the thread pattern out around the outermost layer so it always fits the formation */}
           <radialGradient
             id="thread-fade-grad"

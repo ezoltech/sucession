@@ -98,21 +98,21 @@ button {
 
 .hair {
   fill: none;
-  stroke: var(--ink);
+  stroke: var(--thread-stroke, var(--ink));
   stroke-width: var(--px, 1px);
 }
 
 .orbit {
-  stroke-opacity: 0.32;
+  stroke-opacity: var(--orbit-o, 0.32);
 }
 
 .guide {
   /* --ga fades the threads of crowded layers (set per thread from formation.js; 1 = unchanged) */
-  stroke-opacity: calc(0.17 * var(--ga, 1));
+  stroke-opacity: calc(var(--guide-o, 0.17) * var(--ga, 1));
 }
 
 .halo {
-  stroke-opacity: 0.34;
+  stroke-opacity: var(--halo-o, 0.34);
 }
 
 /* rings draw themselves clockwise from 12 o'clock */
@@ -165,13 +165,13 @@ button {
 
 .node-edge {
   fill: none;
-  stroke: var(--ink);
-  stroke-opacity: 0.16;
-  stroke-width: var(--px, 1px);
+  stroke: var(--node-edge, var(--ink));
+  stroke-opacity: var(--node-edge-o, 0.16);
+  stroke-width: calc(var(--px, 1px) * var(--node-edge-w, 1));
 }
 
 .node.is-empty .node-fill {
-  fill: #0c0a090d;
+  fill: var(--empty-fill, #0c0a090d);
 }
 
 .node.is-empty .node-edge {
@@ -656,7 +656,7 @@ button.token:hover {
 }
 
 .minimap-dot {
-  fill: #0c0a0959;
+  fill: var(--minimap-dot, #0c0a0959);
   cursor: pointer;
   transition: fill 200ms var(--ease-settle);
 }
@@ -757,7 +757,7 @@ button.token:hover {
   font-size: 10px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: #0c0a0966;
+  color: var(--edition-c, #0c0a0966);
 }
 
 .edition-count {
@@ -930,7 +930,7 @@ button.token:hover {
 }
 
 .orbit.is-hover {
-  stroke-opacity: 0.62;
+  stroke-opacity: min(1, calc(var(--orbit-o, 0.32) * 1.9));
 }
 
 .orbit.is-active {
@@ -1083,7 +1083,7 @@ button.token:hover {
   overflow-y: auto;
   background: var(--surface-raised);
   border: 0.8px solid var(--border-medium);
-  box-shadow: 0 14px 34px #0c0a0924;
+  box-shadow: 0 14px 34px var(--shadow, #0c0a0924);
   scrollbar-width: thin;
 }
 
@@ -1268,4 +1268,181 @@ button.token:hover {
   .app.is-immersive .panel-slot {
     transform: translateY(100%);
   }
+}
+
+/* ───────── Foldable sidebar: a big round arrow folds the rail and the panel together ───────── */
+.fold-btn {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  right: -22px; /* centred on the sidebar's right edge */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border: 0.8px solid var(--border-strong);
+  box-shadow: 0 8px 22px var(--shadow, #0c0a0924);
+  transition:
+    transform 320ms var(--ease-goop),
+    background 150ms var(--ease-settle),
+    box-shadow 200ms var(--ease-settle);
+}
+
+.fold-btn:hover {
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 10px 28px var(--shadow, #0c0a0924);
+}
+
+.fold-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.fold-chev {
+  transition: transform 500ms var(--ease-unveil);
+}
+
+.app.is-folded .fold-btn .fold-chev {
+  transform: rotate(180deg);
+}
+
+.app.is-folded .rail-slot {
+  transform: translateX(-100%);
+}
+
+/* the panel slides out past the left edge; the round arrow (outside .panel) stays fully on screen */
+.app.is-folded .panel-slot {
+  transform: translateX(calc(-100% - var(--rail-w) + 30px));
+}
+
+.app.is-folded .rail-slot,
+.app.is-folded .panel {
+  visibility: hidden;
+  transition: visibility 0s linear 700ms;
+}
+
+.app.is-folded .rail-slot {
+  transition:
+    transform 700ms var(--ease-unveil),
+    opacity 500ms var(--ease-settle),
+    visibility 0s linear 700ms;
+}
+
+@media (max-width: 767px) {
+  /* on phones the sheet folds down and the arrow sits on its top edge */
+  .fold-btn {
+    top: -22px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .fold-btn:hover {
+    transform: translateX(-50%) scale(1.08);
+  }
+
+  .fold-btn:active {
+    transform: translateX(-50%) scale(0.95);
+  }
+
+  .fold-chev {
+    transform: rotate(-90deg);
+  }
+
+  .app.is-folded .fold-btn .fold-chev {
+    transform: rotate(90deg);
+  }
+
+  .app.is-folded .panel-slot {
+    transform: translateY(calc(100% - 30px));
+  }
+}
+
+/* ───────── Light / dark mode switch (top of the screen) ───────── */
+.theme-btn {
+  position: absolute;
+  top: 14px;
+  right: 58px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 15px 0 11px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+  border: 0.8px solid var(--border-strong);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition:
+    background 150ms var(--ease-settle),
+    transform 260ms var(--ease-goop);
+}
+
+.theme-btn:hover {
+  background: var(--surface-raised);
+  transform: translateY(-1px);
+}
+
+.theme-icon {
+  flex: none;
+  transition: transform 700ms var(--ease-unveil);
+}
+
+.theme-btn:hover .theme-icon {
+  transform: rotate(40deg);
+}
+
+@media (max-width: 767px) {
+  .theme-btn {
+    top: 10px;
+    right: 52px;
+  }
+}
+
+/* ───────── Dark mode: black ground, spray-gold/silver threads, Athenian-white circle borders ───────── */
+:root[data-theme="dark"] {
+  --ink: #f3efe6; /* Athenian white: warm marble white */
+  --text-primary: #f3efe6;
+  --text-secondary: #f3efe6b3;
+  --text-medium: #f3efe6a6;
+  --text-tertiary: #f3efe699;
+  --text-disabled: #f3efe66b;
+  --surface-base: #0a0908;
+  --surface-mid: #100f0d;
+  --surface-panel: #151311;
+  --surface-raised: #1e1b18;
+  --surface-wash: #f3efe61a;
+  --border-subtle: #f3efe61a;
+  --border-medium: #f3efe626;
+  --border-strong: #f3efe640;
+  --accent-warm: #e3ab52; /* spray gold */
+  --thumbprint: #d9b66a;
+
+  /* strings and threads: a gold x silver metallic sweep (gradient defined in Formation.jsx) */
+  --thread-stroke: url(#thread-metal);
+  --orbit-o: 0.7;
+  --guide-o: 0.5;
+  --halo-o: 0.72;
+
+  /* circle borders */
+  --node-edge: #f3efe6;
+  --node-edge-o: 0.92;
+  --node-edge-w: 1.4;
+
+  --empty-fill: #f3efe612;
+  --edition-c: #f3efe666;
+  --minimap-dot: #f3efe699;
+  --shadow: #000000b3;
+
+  color-scheme: dark;
 }
