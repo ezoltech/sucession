@@ -115,6 +115,55 @@
         "image": "/images/demo/berzedan.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሰሎሜ ብጽዕት",
+        "subtitle": "",
+        "image": "/images/demo/salome.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ማርያም መግደላዊት ",
+        "subtitle": "",
+        "image": "/images/demo/marymg.png",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ማርያም እንተ ዕፍረት",
+        "subtitle": "",
+        "image": "/images/demo/marybt.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ማርታ እህተ አልዐዛር",
+        "subtitle": "",
+        "image": "/images/demo/martha.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሃና ነቢይት",
+        "subtitle": "",
+        "image": "/images/demo/annap.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ማርያም እሞሙ ለደቂቀ ዘብዴዎስ",
+        "subtitle": "",
+        "image": "/images/demo/maryz.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ማርያም እመ ማርቆስ",
+        "subtitle": "",
+        "image": "/images/demo/maryz.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
