@@ -161,7 +161,49 @@
       {
         "name": "ቅድስት ማርያም እመ ማርቆስ",
         "subtitle": "",
-        "image": "/images/demo/maryz.jpg",
+        "image": "/images/demo/maryclo.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ቴክላ",
+        "subtitle": "",
+        "image": "/images/demo/thecla.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ዮልያና (ቅድስት ጁልያና)",
+        "subtitle": "",
+        "image": "/images/demo/juliana.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሶፍያ / በርባራ",
+        "subtitle": "",
+        "image": "/images/demo/sofia.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ጲላግያ",
+        "subtitle": "",
+        "image": "/images/demo/pelagia.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሳራ (እሙ ለያስቆሮቱ ይሁዳ)",
+        "subtitle": "",
+        "image": "/images/demo/saraju.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ዮሃና (ብዕሲቱ ለኩዛ)",
+        "subtitle": "",
+        "image": "/images/demo/joanna.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       }
