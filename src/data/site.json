@@ -10,6 +10,6 @@
   ],
   "notes": [
     "The Succession is a radial archive. One work sits at the centre and its heirs are arranged around it in concentric layers.",
-    "The layers and the number of circles in each one are set in src/data/layers.json. The title, image, collector and notes for every circle are set in src/data/circles.json."
+    "The layers and the number of circles in each one are set in src/data/layers.json. The title, image, collector and notes for every circle are set in src/data/circles.json. The four circles around the centre, which form the cross, are set in src/data/cross.json."
   ]
 }

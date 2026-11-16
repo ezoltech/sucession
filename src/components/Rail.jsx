@@ -110,22 +110,35 @@ function Mark() {
   );
 }
 
+// Where each group sits in the little cross that switches between them
+const GROUP_CELL = {
+  c: [2, 2],
+  t: [1, 2],
+  r: [2, 3],
+  b: [3, 2],
+  l: [2, 1],
+};
+
 export default function Rail({
   brand,
   formation,
   selected,
   selectedLayer = null,
+  activeGroup = "c",
   onSelect,
   onOverview,
   onReplay,
   onFullscreen,
 }) {
+  // the chapters list the layers of one group at a time: the one you are in
+  const group = formation.groupById.get(activeGroup) ?? formation.groups[0];
   // a selected circle lights up its layer; so does a selected layer string
-  const activeLayer = selected ? selected.layer : selectedLayer;
+  const activeChapter = selected ? (selected.ring ?? "centre") : selectedLayer;
   const chapters = [
-    { layer: 0, label: "Centre", nodes: [formation.nodes[0]] },
-    ...formation.rings.map((r) => ({
-      layer: r.layer,
+    { key: "centre", num: 0, label: "Centre", nodes: [group.nodes[0]] },
+    ...group.rings.map((r) => ({
+      key: r.key,
+      num: r.layer,
       label: r.name,
       nodes: r.nodes,
     })),
@@ -143,12 +156,33 @@ export default function Rail({
         <h1 className="brand-name">{brand}</h1>
       </button>
 
+      {formation.groups.length > 1 && (
+        <div className="rail-groups" role="group" aria-label="Groups">
+          {formation.groups.map((g) => {
+            const [row, col] = GROUP_CELL[g.id] ?? [2, 2];
+            const here = g.id === group.id;
+            return (
+              <button
+                key={g.id}
+                type="button"
+                className={`rail-group${here ? " is-active" : ""}`}
+                style={{ gridRow: row, gridColumn: col }}
+                onClick={() => onSelect(g.nodes[0].id)}
+                aria-label={g.id === "c" ? "Centre group" : `${g.name} group`}
+                aria-pressed={here}
+                title={g.id === "c" ? "Centre" : g.name}
+              />
+            );
+          })}
+        </div>
+      )}
+
       <ol className="chapters">
         {chapters.map((c) => {
-          const active = c.layer === activeLayer;
+          const active = c.key === activeChapter;
           return (
             <li
-              key={c.layer}
+              key={c.key}
               className={`chapter${active ? " is-active" : ""}`}
             >
               <button
@@ -157,7 +191,7 @@ export default function Rail({
                 onClick={() => onSelect(c.nodes[0].id)}
               >
                 <span className="chapter-dot" />
-                <span className="chapter-num">{c.layer}</span>
+                <span className="chapter-num">{c.num}</span>
                 <span className="chapter-name">{c.label}</span>
               </button>
               {active && c.nodes.length > 1 && (

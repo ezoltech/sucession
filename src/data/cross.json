@@ -1,0 +1,78 @@
+{
+  "gap": 0.5,
+  "size": 0.7,
+  "arms": {
+    "top": {
+      "name": "ቅዱሳን ነቢያት አበዊነ",
+      "center": {
+        "title": "Top centre",
+        "subtitle": "",
+        "image": "",
+        "description": [],
+        "details": []
+      },
+      "layers": [
+        {
+          "name": "",
+          "circles": 4,
+          "description": "",
+          "members": []
+        }
+      ]
+    },
+    "right": {
+      "name": "Right",
+      "center": {
+        "title": "Right centre",
+        "subtitle": "",
+        "image": "",
+        "description": [],
+        "details": []
+      },
+      "layers": [
+        {
+          "name": "",
+          "circles": 4,
+          "description": "",
+          "members": []
+        }
+      ]
+    },
+    "bottom": {
+      "name": "Bottom",
+      "center": {
+        "title": "Bottom centre",
+        "subtitle": "",
+        "image": "",
+        "description": [],
+        "details": []
+      },
+      "layers": [
+        {
+          "name": "",
+          "circles": 4,
+          "description": "",
+          "members": []
+        }
+      ]
+    },
+    "left": {
+      "name": "Left",
+      "center": {
+        "title": "Left centre",
+        "subtitle": "",
+        "image": "",
+        "description": [],
+        "details": []
+      },
+      "layers": [
+        {
+          "name": "",
+          "circles": 4,
+          "description": "",
+          "members": []
+        }
+      ]
+    }
+  }
+}

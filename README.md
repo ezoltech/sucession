@@ -9,7 +9,7 @@ npm run dev
 
 ## Configure the formation
 
-Everything is driven by three JSON files in `src/data/`.
+Everything is driven by four JSON files in `src/data/`.
 
 ### 1. `layers.json`: how many layers, and how many circles in each
 
@@ -58,7 +58,73 @@ To add a layer, add another object. For example, `{ "circles": 12 }` adds a thir
 
 If a layer has more circles than entries, the extra circles render as empty dashed placeholders. Extra entries are ignored. In dev mode a console warning tells you which layer doesn't match.
 
-### 3. `site.json`: brand and overview text
+### 3. `cross.json`: the four circles around the centre
+
+The whole formation is a big cross: the centre group in the middle, and one more circle straight above, below, left and right of it, each joined to the centre by a straight line. The four circles sit perfectly on the axes, at exactly the same distance.
+
+Each of the four is written the same way, top to bottom: **the circle → its layers → how many circles each layer has → the details of each circle.**
+
+```json
+{
+  "gap": 0.5,
+  "size": 0.7,
+  "arms": {
+    "top": {
+      "name": "Top",
+      "center": { "title": "Top centre", "subtitle": "", "image": "", "description": [], "details": [] },
+      "layers": [
+        {
+          "name": "",
+          "circles": 0,
+          "description": "",
+          "members": []
+        }
+      ]
+    },
+    "right": { … same shape … },
+    "bottom": { … },
+    "left": { … }
+  }
+}
+```
+
+| key       | meaning                                                                                                                      |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `gap`     | free space between the rim of the centre group and the rim of an arm, as a multiple of the centre group's size (default 0.5) |
+| `size`    | radius of an arm's circle as a fraction of the middle circle's (default 0.7). An arm may set its own `size` too              |
+| `name`    | label for the circle (rail, search, panel)                                                                                   |
+| `center`  | the circle itself. Same fields as `center` in `circles.json`                                                                 |
+| `layers`  | its rings, from the inside out. Same format as `layers.json`                                                                  |
+
+Inside a layer:
+
+| key           | meaning                                                                                                              |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `circles`     | **how many circles** this layer has. `0` means the layer is not drawn                                                 |
+| `members`     | **the details of each circle**, one object per circle, in clockwise order from 12 o'clock (same fields as in `layers.json`) |
+| `name`, `description` | optional, for the layer itself                                                                         |
+
+Each layer you add is another ring further out. For example, a right circle with a ring of 6 (two of them filled in) and a ring of 12:
+
+```json
+"layers": [
+  {
+    "name": "First ring",
+    "circles": 6,
+    "members": [
+      { "name": "Anna", "subtitle": "…", "image": "/images/…", "description": ["…"], "details": [] },
+      { "name": "Ben" }
+    ]
+  },
+  { "name": "Second ring", "circles": 12, "members": [] }
+]
+```
+
+Circles without a matching entry in `members` are drawn as empty placeholders, so you can raise `circles` first and fill in details later. Delete the layer (or set `circles` to `0`) and the arm goes back to a single circle.
+
+**The distance follows the pattern.** The arms sit at `centre size × (1 + gap) + arm size` from the middle. Add a layer to the centre (in `layers.json`) and all four circles slide outwards by exactly as much as needed; remove one and they move back in. The same happens when an arm gets more circles or layers. The cross always stays symmetrical and the links stay straight. To go back to the plain single formation, drop the `cross` argument from the `buildFormation(...)` call in `App.jsx`.
+
+### 4. `site.json`: brand and overview text
 
 This file holds the brand name, the collection title and owner, the intro stanzas and the notes shown in the panel when nothing is selected.
 
@@ -68,14 +134,15 @@ This file holds the brand name, the collection title and owner, the intro stanza
 - **Click** zooms into the circle. Click empty space or press **Esc** to fly back out.
 - **← / →** (or the panel's footer) moves to the previous or next circle, going centre first and then each layer clockwise.
 - **Drag** pans and **scroll** zooms.
+- The little cross in the rail jumps between the centre and the four arms; the chapters below it list the layers of the group you are in.
 - The rail jumps to a layer. **Replay** re-runs the intro, and the **›‹** button in the panel collapses it.
 
 ## Structure
 
 ```
 src/
-  data/            layers.json, circles.json, site.json
-  lib/formation.js ring layout math (radii, angles, spacing)
+  data/            layers.json, circles.json, cross.json, site.json
+  lib/formation.js ring layout math (radii, angles, spacing) and the cross: buildGroup (one centre + its layers) and buildFormation (centre + 4 arms + links)
   lib/easing.js    cubic-bezier easing (the reference site's motion tokens)
   components/
     Formation.jsx  SVG stage: camera, motion blur, orbits, curved labels, intro

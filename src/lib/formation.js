@@ -188,7 +188,37 @@ function autoRotation(step, prevAngles) {
   return mid % step;
 }
 
+// ───────── Cross layout ─────────
+// The formation is a cross: the original centre group plus one more circle straight above, below,
+// left and right of it. Every one of them is built by the same code (buildGroup), so an arm is a
+// centre circle exactly like the middle one: it stays a single circle until layers are added to it
+// in cross.json, and then it grows its own rings, threads and members the same way the centre does.
+const ARMS = [
+  { dir: "top", id: "t", dx: 0, dy: -1, name: "Top" },
+  { dir: "right", id: "r", dx: 1, dy: 0, name: "Right" },
+  { dir: "bottom", id: "b", dx: 0, dy: 1, name: "Bottom" },
+  { dir: "left", id: "l", dx: -1, dy: 0, name: "Left" },
+];
+const ARM_SIZE = 0.7; // an arm's centre circle, as a fraction of the middle one (so a little smaller)
+const CROSS_GAP = 0.5; // free space between the rims of two groups, as a multiple of the centre group's extent
+const ARM_LAG = 900; // intro: the arms start drawing after the centre group (ms) …
+const ARM_STAGGER = 140; // … one after the other (ms)
+const LINK_PAD = 1.5; // how close a circle must be to a link for the link to be cut around it
+// How many circles a layer config asks for ("circles": 12, "count": 12, or the number of members)
+function layerCount(cfg) {
+  const inline = Array.isArray(cfg?.members)
+    ? cfg.members
+    : Array.isArray(cfg?.circles)
+      ? cfg.circles
+      : [];
+  const declared = Array.isArray(cfg?.circles)
+    ? undefined
+    : (cfg?.circles ?? cfg?.count);
+  return Math.max(0, Math.floor(Number(declared ?? inline.length) || 0));
+}
+
 /**
+ * One group: a centre circle at (cx, cy) plus N concentric layers around it.
  * Each layer in layers.json may also carry its circles' details inline (all optional):
  *   members: [{ title | name, subtitle, subtitleLabel, image, color, description, details }, …]
  * Inline data wins over the same circle in circles.json; circles without data stay empty placeholders.
@@ -196,26 +226,37 @@ function autoRotation(step, prevAngles) {
  * @param {Array<{circles?:number, name?:string, description?:string|string[], rotation?:number|"auto",
  *                members?:object[], size?:number, radius?:number, threads?:boolean}>} layersConfig
  * @param {{center?: object, layers?: Array<Array<object>>}} circleData
+ * @param {{id:string, dir:string, name:string, centerTitle:string, cx:number, cy:number, lag:number, slots:object[], centerR?:number, quiet?:boolean}} opt
  */
-export function buildFormation(layersConfig = [], circleData = {}) {
+function buildGroup(layersConfig, circleData, opt) {
+  const { id, dir, name, centerTitle, cx, cy, lag, slots, quiet } = opt;
+  const centerR = opt.centerR ?? CENTER_R;
+  // the centre group keeps the plain ids ("c", "1-0" …); arms are prefixed ("t:c", "t:1-0" …)
+  const pre = id === "c" ? "" : `${id}:`;
   const nodes = [];
   const rings = [];
+  // one "slot" per centre circle and per layer: labels switch on per slot as the camera zooms in
+  const newSlot = (r) => slots.push({ base: Math.min(r, NODE_R) }) - 1;
 
   nodes.push({
-    id: "c",
+    id: `${pre}c`,
+    group: id,
+    ring: null,
     layer: 0,
     index: 0,
     count: 1,
-    x: 0,
-    y: 0,
-    r: CENTER_R,
+    x: cx,
+    y: cy,
+    r: centerR,
     angle: -90,
     sweep: 0,
-    data: normalise(circleData.center, "Centre", CENTER_COLOR),
+    lag,
+    slot: newSlot(centerR),
+    data: normalise(circleData.center, centerTitle, CENTER_COLOR),
   });
 
   let prevR = 0;
-  let prevNodeR = CENTER_R;
+  let prevNodeR = centerR;
   let prevAngles = [];
 
   layersConfig.forEach((cfg, li) => {
@@ -225,14 +266,8 @@ export function buildFormation(layersConfig = [], circleData = {}) {
       : Array.isArray(cfg?.circles)
         ? cfg.circles
         : [];
-    const declared = Array.isArray(cfg?.circles)
-      ? undefined
-      : (cfg?.circles ?? cfg?.count);
     // "circles": 12 stays in charge of the count; without it the number of members is used
-    const count = Math.max(
-      0,
-      Math.floor(Number(declared ?? inline.length) || 0),
-    );
+    const count = layerCount(cfg);
     if (!count) return;
 
     const layerNo = rings.length + 1;
@@ -292,9 +327,9 @@ export function buildFormation(layersConfig = [], circleData = {}) {
     const entries = Math.max(fileData.length, inline.length);
 
     // layers with no data at all are fine (empty placeholders); only a half-filled layer is worth a hint
-    if (import.meta.env?.DEV && entries > 0 && entries !== count) {
+    if (!quiet && import.meta.env?.DEV && entries > 0 && entries !== count) {
       console.warn(
-        `[formation] Layer ${layerNo} has ${count} circles but ${entries} entries of data (layers.json members / circles.json).` +
+        `[formation] ${name}: layer ${layerNo} has ${count} circles but ${entries} entries of data (layers.json members / circles.json / cross.json).` +
           (entries < count
             ? " Missing entries render as empty placeholders."
             : " Extra entries are ignored."),
@@ -303,14 +338,19 @@ export function buildFormation(layersConfig = [], circleData = {}) {
 
     // threads: false in layers.json switches the thread pattern off for that layer only
     const ring = {
+      key: `${pre}${layerNo}`, // unique across the whole cross; `layer` below is the number inside its group
+      group: id,
       layer: layerNo,
       name: cfg.name || `Layer ${layerNo}`,
       description: toArray(cfg.description),
+      cx,
+      cy,
       R,
       r,
       count,
       rotation,
       threads: cfg.threads !== false,
+      slot: newSlot(r),
       nodes: [],
     };
 
@@ -320,15 +360,19 @@ export function buildFormation(layersConfig = [], circleData = {}) {
       // sweep = clockwise position from 12 o'clock in [0, 1), used to stagger the intro
       const sweep = ((((deg + 90) % 360) + 360) % 360) / 360;
       const node = {
-        id: `${layerNo}-${i}`,
+        id: `${pre}${layerNo}-${i}`,
+        group: id,
+        ring: ring.key,
         layer: layerNo,
         index: i,
         count,
-        x: R * Math.cos(rad),
-        y: R * Math.sin(rad),
+        x: cx + R * Math.cos(rad),
+        y: cy + R * Math.sin(rad),
         r,
         angle: deg,
         sweep,
+        lag,
+        slot: ring.slot,
         data: normalise(
           dataFor(i),
           `Untitled ${layerNo}.${i + 1}`,
@@ -366,7 +410,7 @@ export function buildFormation(layersConfig = [], circleData = {}) {
   // space for the curved labels under the outermost circles and the name of the last layer
   const extent = outer
     ? Math.max(outer.R + outer.r * 1.85, outer.label.r + outer.label.fs)
-    : CENTER_R * 1.9;
+    : centerR * 1.9;
 
   // Sacred-geometry threads, one for every circle of every layer, whatever the circle count.
   // Each thread is a circle centred on a node that passes exactly through that node's predecessor:
@@ -390,6 +434,8 @@ export function buildFormation(layersConfig = [], circleData = {}) {
       }
       guides.push({
         id: `g-${n.id}`,
+        group: id,
+        ring: ring.key,
         layer: ring.layer,
         from: parent.id,
         x: n.x,
@@ -398,18 +444,149 @@ export function buildFormation(layersConfig = [], circleData = {}) {
         sweep: n.sweep,
         alpha,
         // layer 1 keeps its original timing (420 / 540 / 660 ms); later layers draw in after it
-        delay: 420 + (ring.layer - 1) * 260 + n.sweep * 360,
+        delay: lag + 420 + (ring.layer - 1) * 260 + n.sweep * 360,
       });
     }
   });
 
   // Threads from outer layers reach past the last ring, so they fade out between the outermost
-  // circles and the edge of the formation instead of running off into empty space.
+  // circles and the edge of the group instead of running off into empty space.
   const fade = outer
     ? { from: Math.min(outer.R + outer.r * 1.1, extent * 0.97), to: extent }
     : { from: extent * 0.9, to: extent };
 
-  return { nodes, rings, guides, extent, fade };
+  return { id, dir, name, cx, cy, lag, nodes, rings, guides, extent, fade };
+}
+
+// A straight line from the centre of one group to the centre of another. It is cut around every
+// circle it passes (`nodeIds`), so it runs through the gaps like the other hairlines.
+function buildLink(a, b, lag) {
+  const x1 = a.cx;
+  const y1 = a.cy;
+  const x2 = b.cx;
+  const y2 = b.cy;
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  const ux = (x2 - x1) / len;
+  const uy = (y2 - y1) / len;
+  const nodeIds = [];
+  for (const n of [...a.nodes, ...b.nodes]) {
+    const along = (n.x - x1) * ux + (n.y - y1) * uy;
+    const across = Math.abs((n.x - x1) * uy - (n.y - y1) * ux);
+    // 1.7 × radius also covers the curved label that sits under a circle
+    if (along > -n.r && along < len + n.r && across < n.r * 1.7 + LINK_PAD)
+      nodeIds.push(n.id);
+  }
+  return { id: `${a.id}-${b.id}`, from: a.id, to: b.id, x1, y1, x2, y2, len, nodeIds, lag };
+}
+
+/**
+ * The whole formation: the centre group, plus (when `cross` is given) one circle straight above, below,
+ * left and right of it, each linked to the centre by a straight line.
+ *
+ * Every arm sits at the same distance, `centre extent × (1 + gap) + arm extent`, so the cross stays
+ * symmetrical and grows or shrinks together with the centre group's pattern: add a layer to the centre
+ * and all four arms move out by exactly as much as is needed. The same goes for an arm that gets layers
+ * of its own: the cross opens up just enough to make room for it.
+ *
+ * Each arm has the same shape as the middle circle: a centre circle, then layers, each layer saying how many
+ * circles it has and the details of each one. An arm whose layers are empty stays a single circle.
+ *
+ * cross = { gap?: number, size?: number, arms?: { top|right|bottom|left: { name?, size?, center?, layers? } } }
+ *   gap     free space between two groups' rims, as a multiple of the centre group's extent (default 0.5)
+ *   size    radius of an arm's centre circle as a fraction of the middle circle's (default 0.7); an arm may set its own
+ *   center  the arm's centre circle, same fields as `center` in circles.json
+ *   layers  the arm's layers, same format as layers.json: [{ name, circles, description, members: [details of each circle] }]
+ */
+export function buildFormation(layersConfig = [], circleData = {}, cross = null) {
+  const slots = [];
+  const main = buildGroup(layersConfig, circleData, {
+    id: "c",
+    dir: "centre",
+    name: "Centre",
+    centerTitle: "Centre",
+    cx: 0,
+    cy: 0,
+    lag: 0,
+    slots,
+  });
+  const groups = [main];
+  const links = [];
+
+  if (cross) {
+    const specs = ARMS.map((a) => {
+      const own = cross.arms?.[a.dir] ?? {};
+      const name = own.name || a.name;
+      // "size" is a fraction of the middle circle's radius; an arm can have its own, otherwise the shared one
+      const size = Number(own.size ?? cross.size ?? ARM_SIZE);
+      return {
+        ...a,
+        name,
+        centerR: CENTER_R * (size > 0 ? size : ARM_SIZE),
+        centerTitle: `${name} centre`,
+        layers: Array.isArray(own.layers) ? own.layers : [],
+        data: { center: own.center, layers: [] },
+      };
+    });
+    const build = (a, at, slotList, quiet = false) =>
+      buildGroup(a.layers, a.data, {
+        id: a.id,
+        dir: a.dir,
+        name: a.name,
+        centerTitle: a.centerTitle,
+        centerR: a.centerR,
+        cx: at.cx,
+        cy: at.cy,
+        lag: at.lag,
+        slots: slotList,
+        quiet,
+      });
+
+    // measure the arms first (their size does not depend on where they sit), then place them all
+    // at one distance, the one the biggest arm needs, so the cross is perfectly symmetrical
+    const armExtent = Math.max(
+      ...specs.map((a) => build(a, { cx: 0, cy: 0, lag: 0 }, [], true).extent),
+    );
+    const gap = Math.max(0, Number(cross.gap ?? CROSS_GAP));
+    const distance = main.extent * (1 + (Number.isFinite(gap) ? gap : CROSS_GAP)) + armExtent;
+
+    specs.forEach((a, i) => {
+      const lag = ARM_LAG + i * ARM_STAGGER;
+      const g = build(a, { cx: a.dx * distance, cy: a.dy * distance, lag }, slots);
+      groups.push(g);
+      links.push(buildLink(main, g, 350 + i * 90));
+    });
+  }
+
+  const nodes = groups.flatMap((g) => g.nodes);
+  const rings = groups.flatMap((g) => g.rings);
+  const guides = groups.flatMap((g) => g.guides);
+
+  // world-space box around everything, and the distance from the middle to its furthest edge
+  const bounds = {
+    minX: Math.min(...groups.map((g) => g.cx - g.extent)),
+    maxX: Math.max(...groups.map((g) => g.cx + g.extent)),
+    minY: Math.min(...groups.map((g) => g.cy - g.extent)),
+    maxY: Math.max(...groups.map((g) => g.cy + g.extent)),
+  };
+  const extent = Math.max(
+    Math.abs(bounds.minX),
+    Math.abs(bounds.maxX),
+    Math.abs(bounds.minY),
+    Math.abs(bounds.maxY),
+  );
+
+  return {
+    groups,
+    nodes,
+    rings,
+    guides,
+    links,
+    slots,
+    bounds,
+    extent,
+    ringByKey: new Map(rings.map((r) => [r.key, r])),
+    groupById: new Map(groups.map((g) => [g.id, g])),
+  };
 }
 
 // ───────── Search ─────────
@@ -444,7 +621,11 @@ export function searchFormation(formation, query, limit = 8) {
     return total;
   };
 
-  formation.rings.forEach((ring) => {
+  // which arm of the cross a result lives in (nothing is added for the centre group)
+  const armOf = (id) =>
+    id === "c" ? "" : (formation.groupById.get(id)?.name ?? "");
+
+  formation.rings.forEach((ring, ri) => {
     const title = fold(ring.name);
     const s = score(
       [
@@ -456,11 +637,13 @@ export function searchFormation(formation, query, limit = 8) {
     if (s)
       hits.push({
         kind: "layer",
-        layer: ring.layer,
+        layer: ring.key,
         title: ring.name,
-        meta: `Group · Layer ${ring.layer}`,
+        meta: [`Group · Layer ${ring.layer}`, armOf(ring.group)]
+          .filter(Boolean)
+          .join(" · "),
         score: s - 0.5,
-        order: ring.layer,
+        order: ri,
       });
   });
 
@@ -481,12 +664,12 @@ export function searchFormation(formation, query, limit = 8) {
       title,
     );
     if (!s) return;
-    const group = n.layer === 0 ? "Centre" : formation.rings[n.layer - 1]?.name;
+    const group = n.ring ? formation.ringByKey.get(n.ring)?.name : "Centre";
     hits.push({
       kind: "node",
       id: n.id,
       title: d.title,
-      meta: [d.subtitle, group].filter(Boolean).join(" · "),
+      meta: [d.subtitle, group, armOf(n.group)].filter(Boolean).join(" · "),
       score: s,
       order: 1000 + i,
     });

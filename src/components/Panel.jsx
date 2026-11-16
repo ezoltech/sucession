@@ -64,13 +64,17 @@ function MiniMap({
 }) {
   const { nodes, rings, extent } = formation;
   const k = 34 / extent;
+  // the plain formation keeps its big dots; in the cross everything is smaller, so the dots are too
+  const minDot = formation.groups.length > 1 ? 0.45 : 1.6;
   return (
     <svg viewBox="-40 -40 80 80" className="minimap" aria-hidden="true">
       {rings.map((r) => {
-        const lit = r.layer === activeLayer;
+        const lit = r.key === activeLayer;
         return (
           <circle
-            key={r.layer}
+            key={r.key}
+            cx={r.cx * k}
+            cy={r.cy * k}
             r={r.R * k}
             className={`minimap-orbit${lit ? " is-lit" : ""}`}
             style={lit && activeColor ? { stroke: activeColor } : undefined}
@@ -82,10 +86,10 @@ function MiniMap({
           key={n.id}
           cx={n.x * k}
           cy={n.y * k}
-          r={Math.max(1.6, n.r * k * 0.8)}
-          className={`minimap-dot${n.id === selectedId ? " is-active" : ""}${n.layer === activeLayer ? " is-lit" : ""}`}
+          r={Math.max(minDot, n.r * k * 0.8)}
+          className={`minimap-dot${n.id === selectedId ? " is-active" : ""}${n.ring === activeLayer ? " is-lit" : ""}`}
           style={
-            n.layer === activeLayer && activeColor
+            n.ring === activeLayer && activeColor
               ? { fill: activeColor }
               : undefined
           }
@@ -242,6 +246,7 @@ export default function Panel({
   layer = null,
   layerColor = null,
   ringName,
+  group,
   prev,
   next,
   prevLayer = null,
@@ -257,14 +262,28 @@ export default function Panel({
   const isLayer = !isNode && !!layer;
   const d = selected?.data;
 
+  const crossed = formation.groups.length > 1;
+  // where a circle's own text lives, so the "no description yet" hint points at the right file
+  const dataFile =
+    group.id === "c"
+      ? 'src/data/circles.json, or in its layer\'s "members" in src/data/layers.json'
+      : selected?.layer === 0
+        ? `src/data/cross.json (arms → ${group.dir} → center)`
+        : `src/data/cross.json (arms → ${group.dir} → layers → members)`;
+
   const parent = isNode || isLayer ? site.collectionTitle : site.breadcrumb;
   const current = isNode
     ? selected.layer === 0
-      ? "Centre"
+      ? group.id === "c"
+        ? "Centre"
+        : `${group.name} centre`
       : ringName
     : isLayer
       ? layer.name
       : site.collectionTitle;
+  const groupTag = (g) => (g.id === "c" ? "Centre" : g.name);
+  // groups that have layers of their own; a plain single-circle arm has nothing to list
+  const layered = formation.groups.filter((g) => g.rings.length > 0);
 
   return (
     <aside className={`panel${collapsed ? " is-collapsed" : ""}`} data-panel>
@@ -300,7 +319,7 @@ export default function Panel({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={
-              selected?.id ?? (isLayer ? `layer-${layer.layer}` : "overview")
+              selected?.id ?? (isLayer ? `layer-${layer.key}` : "overview")
             }
             {...enter}
             className="panel-body"
@@ -313,8 +332,8 @@ export default function Panel({
                 <>
                   <span className="owner-label">Group</span>{" "}
                   <span className="owner-name">
-                    Layer {layer.layer} · {layer.count}{" "}
-                    {layer.count === 1 ? "circle" : "circles"}
+                    {crossed ? `${groupTag(group)} · ` : ""}Layer {layer.layer} ·{" "}
+                    {layer.count} {layer.count === 1 ? "circle" : "circles"}
                   </span>
                 </>
               ) : (
@@ -362,7 +381,7 @@ export default function Panel({
                 <MiniMap
                   formation={formation}
                   selectedId={selected?.id}
-                  activeLayer={isLayer ? layer.layer : null}
+                  activeLayer={isLayer ? layer.key : null}
                   activeColor={layerColor}
                   onSelect={onSelect}
                 />
@@ -377,9 +396,7 @@ export default function Panel({
                     d.description.map((p, i) => <p key={i}>{p}</p>)
                   ) : (
                     <p className="muted">
-                      No description yet. Add one for this circle in
-                      src/data/circles.json, or in its layer's "members" in
-                      src/data/layers.json.
+                      No description yet. Add one for this circle in {dataFile}.
                     </p>
                   )}
                 </section>
@@ -403,11 +420,21 @@ export default function Panel({
                   ) : (
                     <p className="muted">
                       No group description yet. Add a "description" for this
-                      layer in src/data/layers.json.
+                      layer in{" "}
+                      {group.id === "c"
+                        ? "src/data/layers.json"
+                        : `src/data/cross.json (arms → ${group.dir} → layers)`}
+                      .
                     </p>
                   )}
                 </section>
                 <dl className="details">
+                  {crossed && (
+                    <div className="detail-row">
+                      <dt>Position</dt>
+                      <dd>{groupTag(group)}</dd>
+                    </div>
+                  )}
                   <div className="detail-row">
                     <dt>Layer</dt>
                     <dd>{layer.layer}</dd>
@@ -467,21 +494,34 @@ export default function Panel({
                 {formation.rings.length > 0 && (
                   <section className="members">
                     <h3 className="section-label">Groups</h3>
-                    <ul className="member-list">
-                      {formation.rings.map((r) => (
-                        <li key={r.layer}>
+                    {layered.map((g) => (
+                      <div key={g.id} className="member-set">
+                        {layered.length > 1 && (
                           <button
                             type="button"
-                            className="member"
-                            onClick={() => onSelectLayer(r.layer)}
+                            className="member-set-head"
+                            onClick={() => onSelect(g.nodes[0].id)}
                           >
-                            <span className="member-num">{r.layer}</span>
-                            <span className="member-title">{r.name}</span>
-                            <span className="member-sub">{r.count}</span>
+                            {groupTag(g)}
                           </button>
-                        </li>
-                      ))}
-                    </ul>
+                        )}
+                        <ul className="member-list">
+                          {g.rings.map((r) => (
+                            <li key={r.key}>
+                              <button
+                                type="button"
+                                className="member"
+                                onClick={() => onSelectLayer(r.key)}
+                              >
+                                <span className="member-num">{r.layer}</span>
+                                <span className="member-title">{r.name}</span>
+                                <span className="member-sub">{r.count}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </section>
                 )}
               </>
@@ -495,8 +535,10 @@ export default function Panel({
           <span>
             {isNode
               ? selected.layer === 0
-                ? "Centre"
-                : `Layer ${selected.layer} · ${ringName}`
+                ? crossed
+                  ? `${groupTag(group)}${group.id === "c" ? "" : " centre"}`
+                  : "Centre"
+                : `${crossed && group.id !== "c" ? `${group.name} · ` : ""}Layer ${selected.layer}${ringName && ringName !== `Layer ${selected.layer}` ? ` · ${ringName}` : ""}`
               : isLayer
                 ? `Group · ${layer.name}`
                 : "Circles"}
@@ -505,8 +547,10 @@ export default function Panel({
             {isNode
               ? `${selected.index + 1}/${selected.count}`
               : isLayer
-                ? `${layer.layer}/${formation.rings.length}`
-                : `1 + ${formation.rings.map((r) => r.count).join(" + ")}`}
+                ? `${layer.layer}/${group.rings.length}`
+                : crossed
+                  ? `${formation.groups.length} groups · ${formation.nodes.length}`
+                  : `1 + ${formation.rings.map((r) => r.count).join(" + ")}`}
           </span>
         </div>
         <div className="pager">
@@ -514,14 +558,14 @@ export default function Panel({
             <>
               <button
                 type="button"
-                onClick={() => onSelectLayer(prevLayer.layer)}
+                onClick={() => onSelectLayer(prevLayer.key)}
                 className="pager-btn"
               >
                 <Chevron /> <span>{prevLayer.name}</span>
               </button>
               <button
                 type="button"
-                onClick={() => onSelectLayer(nextLayer.layer)}
+                onClick={() => onSelectLayer(nextLayer.key)}
                 className="pager-btn pager-next"
               >
                 <span>{nextLayer.name}</span> <Chevron dir="right" />

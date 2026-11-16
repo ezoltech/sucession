@@ -13,6 +13,7 @@ import Rail from "./components/Rail";
 import { buildFormation, randomHighlight } from "./lib/formation";
 import layers from "./data/layers.json";
 import circles from "./data/circles.json";
+import cross from "./data/cross.json";
 import site from "./data/site.json";
 
 const MOBILE = "(max-width: 767px)";
@@ -125,11 +126,11 @@ function useStage(railRef, panelRef, collapsed, immersive, folded) {
 }
 
 export default function App() {
-  const formation = useMemo(() => buildFormation(layers, circles), []);
+  const formation = useMemo(() => buildFormation(layers, circles, cross), []);
   const order = formation.nodes;
   const rings = formation.rings;
   const [selectedId, setSelectedId] = useState(null);
-  const [selectedLayer, setSelectedLayer] = useState(null); // layer number (1…n) whose string is lit
+  const [selectedLayer, setSelectedLayer] = useState(null); // key of the layer ("2", "t:2" …) whose string is lit
   const [layerColor, setLayerColor] = useState(null); // random highlight colour, only set while a layer is selected
   const [hoveredId, setHoveredId] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -152,14 +153,18 @@ export default function App() {
 
   const selected = order.find((n) => n.id === selectedId) || null;
   const layer =
-    !selected && selectedLayer ? rings[selectedLayer - 1] || null : null;
+    !selected && selectedLayer
+      ? formation.ringByKey.get(selectedLayer) || null
+      : null;
   const pos = selected ? order.indexOf(selected) : -1;
   const prev = order[(pos <= 0 ? order.length : pos) - 1];
   const next = order[(pos + 1) % order.length];
-  const ringName =
-    selected && selected.layer > 0
-      ? formation.rings[selected.layer - 1].name
-      : "";
+  const ringName = selected?.ring
+    ? formation.ringByKey.get(selected.ring).name
+    : "";
+  const group = formation.groupById.get(
+    selected ? selected.group : (layer?.group ?? "c"),
+  );
   const layerPos = layer ? rings.indexOf(layer) : -1;
   const prevLayer = layer
     ? rings[(layerPos - 1 + rings.length) % rings.length]
@@ -232,7 +237,7 @@ export default function App() {
       const backward = e.key === "ArrowLeft" || e.key === "ArrowUp";
       if (forward || backward) {
         e.preventDefault();
-        if (layer) selectLayer((forward ? nextLayer : prevLayer).layer);
+        if (layer) selectLayer((forward ? nextLayer : prevLayer).key);
         else setSelectedId((forward ? next : prev).id);
       } else if (e.key === "Escape") {
         if (immersive) toggleFullscreen();
@@ -274,7 +279,7 @@ export default function App() {
         stage={stage}
         selectedId={selectedId}
         hoveredId={hoveredId}
-        activeLayer={layer ? layer.layer : null}
+        activeLayer={layer ? layer.key : null}
         activeColor={layer ? layerColor : null}
         onHover={setHoveredId}
         onSelect={select}
@@ -287,7 +292,8 @@ export default function App() {
           brand={site.brand}
           formation={formation}
           selected={selected}
-          selectedLayer={layer ? layer.layer : null}
+          selectedLayer={layer ? layer.key : null}
+          activeGroup={group.id}
           onSelect={select}
           onOverview={overview}
           onReplay={() => {
@@ -309,6 +315,7 @@ export default function App() {
           layer={layer}
           layerColor={layer ? layerColor : null}
           ringName={ringName}
+          group={group}
           prev={prev}
           next={next}
           prevLayer={prevLayer}

@@ -1222,6 +1222,68 @@ button.token:hover {
   color: var(--text-tertiary);
 }
 
+/* ───────── Cross: straight links between the centre and the top, right, bottom and left groups ───────── */
+.link {
+  fill: none;
+  stroke: var(--link-stroke, var(--ink));
+  stroke-opacity: var(--link-o, 0.55);
+  stroke-width: calc(var(--px, 1px) * 1.4);
+  pointer-events: none;
+}
+
+/* little cross in the rail that switches between the five groups */
+.rail-groups {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, 12px);
+  grid-template-rows: repeat(3, 12px);
+  gap: 3px;
+  justify-content: center;
+  padding: 12px 0 10px;
+  border-bottom: 0.8px solid var(--border-subtle);
+}
+
+.rail-group {
+  place-self: center;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 0.8px solid var(--border-strong);
+  background: var(--surface-panel);
+  transition:
+    background 200ms var(--ease-settle),
+    transform 300ms var(--ease-goop);
+}
+
+.rail-group:hover {
+  transform: scale(1.3);
+}
+
+.rail-group.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* the overview lists the groups of every arm under its own small heading */
+.member-set + .member-set {
+  margin-top: 18px;
+}
+
+.member-set-head {
+  display: block;
+  padding: 2px 0 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  transition: color 150ms var(--ease-settle);
+}
+
+.member-set-head:hover {
+  color: var(--ink);
+}
+
 /* ───────── Full screen mode: sidebar gone, only the circle pattern ───────── */
 .rail-slot {
   transition:
@@ -1430,6 +1492,8 @@ button.token:hover {
 
   /* strings and threads: a gold x silver metallic sweep (gradient defined in Formation.jsx) */
   --thread-stroke: url(#thread-metal);
+  --link-stroke: url(#thread-metal-world); /* straight lines have no bounding box, so they get a world-space sweep */
+  --link-o: 0.85;
   --orbit-o: 0.7;
   --guide-o: 0.5;
   --halo-o: 0.72;
