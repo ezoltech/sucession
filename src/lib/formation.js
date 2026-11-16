@@ -200,7 +200,7 @@ const ARMS = [
   { dir: "left", id: "l", dx: -1, dy: 0, name: "Left" },
 ];
 const ARM_SIZE = 0.7; // an arm's centre circle, as a fraction of the middle one (so a little smaller)
-const CROSS_GAP = 0.5; // free space between the rims of two groups, as a multiple of the centre group's extent
+const CROSS_GAP = 0.4; // free thread between the centre group and the arms, as a fraction of their two sizes added together
 const ARM_LAG = 900; // intro: the arms start drawing after the centre group (ms) …
 const ARM_STAGGER = 140; // … one after the other (ms)
 const LINK_PAD = 1.5; // how close a circle must be to a link for the link to be cut around it
@@ -483,16 +483,16 @@ function buildLink(a, b, lag) {
  * The whole formation: the centre group, plus (when `cross` is given) one circle straight above, below,
  * left and right of it, each linked to the centre by a straight line.
  *
- * Every arm sits at the same distance, `centre extent × (1 + gap) + arm extent`, so the cross stays
- * symmetrical and grows or shrinks together with the centre group's pattern: add a layer to the centre
- * and all four arms move out by exactly as much as is needed. The same goes for an arm that gets layers
- * of its own: the cross opens up just enough to make room for it.
+ * Every arm sits at the same distance, `(centre extent + biggest arm extent) × (1 + gap)`, so the cross
+ * stays symmetrical and its threads grow or shrink together with the patterns: add a layer to the centre
+ * or to any arm and all four arms move out, and the thread joining each of them to the centre gets longer.
  *
  * Each arm has the same shape as the middle circle: a centre circle, then layers, each layer saying how many
  * circles it has and the details of each one. An arm whose layers are empty stays a single circle.
  *
  * cross = { gap?: number, size?: number, arms?: { top|right|bottom|left: { name?, size?, center?, layers? } } }
- *   gap     free space between two groups' rims, as a multiple of the centre group's extent (default 0.5)
+ *   gap     free thread between the centre group's rim and an arm's rim, as a fraction of the centre's and the
+ *           biggest arm's extents added together (default 0.4)
  *   size    radius of an arm's centre circle as a fraction of the middle circle's (default 0.7); an arm may set its own
  *   center  the arm's centre circle, same fields as `center` in circles.json
  *   layers  the arm's layers, same format as layers.json: [{ name, circles, description, members: [details of each circle] }]
@@ -546,8 +546,10 @@ export function buildFormation(layersConfig = [], circleData = {}, cross = null)
     const armExtent = Math.max(
       ...specs.map((a) => build(a, { cx: 0, cy: 0, lag: 0 }, [], true).extent),
     );
+    // The free stretch of thread between the centre group and an arm is a share of BOTH sizes added up, so
+    // adding a circle to the centre or to any arm makes every thread longer (not only the others').
     const gap = Math.max(0, Number(cross.gap ?? CROSS_GAP));
-    const distance = main.extent * (1 + (Number.isFinite(gap) ? gap : CROSS_GAP)) + armExtent;
+    const distance = (main.extent + armExtent) * (1 + (Number.isFinite(gap) ? gap : CROSS_GAP));
 
     specs.forEach((a, i) => {
       const lag = ARM_LAG + i * ARM_STAGGER;

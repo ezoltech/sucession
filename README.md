@@ -90,7 +90,7 @@ Each of the four is written the same way, top to bottom: **the circle → its la
 
 | key       | meaning                                                                                                                      |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `gap`     | free space between the rim of the centre group and the rim of an arm, as a multiple of the centre group's size (default 0.5) |
+| `gap`     | free thread between the rim of the centre group and the rim of an arm, as a fraction of the two sizes added together (default 0.4) |
 | `size`    | radius of an arm's circle as a fraction of the middle circle's (default 0.7). An arm may set its own `size` too              |
 | `name`    | label for the circle (rail, search, panel)                                                                                   |
 | `center`  | the circle itself. Same fields as `center` in `circles.json`                                                                 |
@@ -122,7 +122,7 @@ Each layer you add is another ring further out. For example, a right circle with
 
 Circles without a matching entry in `members` are drawn as empty placeholders, so you can raise `circles` first and fill in details later. Delete the layer (or set `circles` to `0`) and the arm goes back to a single circle.
 
-**The distance follows the pattern.** The arms sit at `centre size × (1 + gap) + arm size` from the middle. Add a layer to the centre (in `layers.json`) and all four circles slide outwards by exactly as much as needed; remove one and they move back in. The same happens when an arm gets more circles or layers. The cross always stays symmetrical and the links stay straight. To go back to the plain single formation, drop the `cross` argument from the `buildFormation(...)` call in `App.jsx`.
+**The threads follow the pattern.** The four circles sit at `(centre size + biggest arm size) × (1 + gap)` from the middle, so the thread joining each one to the centre gets longer whenever a circle is added to the centre or to any of the four, and shorter when one is removed. All four stay at the same distance, so the cross always stays symmetrical and the links stay straight. To go back to the plain single formation, drop the `cross` argument from the `buildFormation(...)` call in `App.jsx`.
 
 ### 4. `site.json`: brand and overview text
 
