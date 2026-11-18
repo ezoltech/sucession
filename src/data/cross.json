@@ -5,9 +5,9 @@
     "top": {
       "name": "ቅዱሳን ነቢያት አበዊነ",
       "center": {
-        "title": "Top centre",
+        "title": "አዳም አቡነ",
         "subtitle": "",
-        "image": "",
+        "image": "/images/demo/adam.jpg",
         "description": [],
         "details": []
       },
@@ -23,9 +23,9 @@
     "right": {
       "name": "Right",
       "center": {
-        "title": "Right centre",
+        "title": "እግዝእትነ ቅድስት በክልኤ ማርያም ወላዲተ አምላክ",
         "subtitle": "",
-        "image": "",
+        "image": "/images/demo/mary.jpg",
         "description": [],
         "details": []
       },
@@ -41,9 +41,9 @@
     "bottom": {
       "name": "Bottom",
       "center": {
-        "title": "Bottom centre",
+        "title": "ርዕሰ መነኮሳት አባ እንጦንስ ገዳማዊ",
         "subtitle": "",
-        "image": "",
+        "image": "/images/demo/anthony.jpg",
         "description": [],
         "details": []
       },
@@ -59,9 +59,9 @@
     "left": {
       "name": "Left",
       "center": {
-        "title": "Left centre",
+        "title": "ሊቀ ሰማዕታት ማር ቅዱስ ጊዮርጊስ",
         "subtitle": "",
-        "image": "",
+        "image": "/images/demo/georgem.jpg",
         "description": [],
         "details": []
       },
