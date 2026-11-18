@@ -206,6 +206,55 @@
         "image": "/images/demo/joanna.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ኢዮጰራቅሲያ",
+        "subtitle": "",
+        "image": "/images/demo/eup.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሶስና",
+        "subtitle": "",
+        "image": "/images/demo/susana.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት መሪና",
+        "subtitle": "",
+        "image": "/images/demo/marina.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ሶፊያ ሮማዊት ሰማዕት(እሞሙ ለሰማዕታት ቅዱሳት ጲስጢስ ፣ አላጲስ ወአጋጲስ  )",
+        "subtitle": "",
+        "image": "/images/demo/sofiar.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ጲስጢስ",
+        "subtitle": "",
+        "image": "/images/demo/pistis.png",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት አላጲስ",
+        "subtitle": "",
+        "image": "/images/demo/alapis.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት አጋጲስ",
+        "subtitle": "",
+        "image": "/images/demo/agapis.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
