@@ -267,7 +267,9 @@ export default function Panel({
   const dataFile =
     group.id === "c"
       ? 'src/data/circles.json, or in its layer\'s "members" in src/data/layers.json'
-      : selected?.layer === 0
+      : !group.center
+        ? "src/data/cross.json (outer → layers → members)"
+        : selected?.layer === 0
         ? `src/data/cross.json (arms → ${group.dir} → center)`
         : `src/data/cross.json (arms → ${group.dir} → layers → members)`;
 
@@ -423,7 +425,9 @@ export default function Panel({
                       layer in{" "}
                       {group.id === "c"
                         ? "src/data/layers.json"
-                        : `src/data/cross.json (arms → ${group.dir} → layers)`}
+                        : !group.center
+                          ? "src/data/cross.json (outer → layers)"
+                          : `src/data/cross.json (arms → ${group.dir} → layers)`}
                       .
                     </p>
                   )}
@@ -538,7 +542,7 @@ export default function Panel({
                 ? crossed
                   ? `${groupTag(group)}${group.id === "c" ? "" : " centre"}`
                   : "Centre"
-                : `${crossed && group.id !== "c" ? `${group.name} · ` : ""}Layer ${selected.layer}${ringName && ringName !== `Layer ${selected.layer}` ? ` · ${ringName}` : ""}`
+                : `${crossed && group.id !== "c" && group.name !== ringName ? `${group.name} · ` : ""}Layer ${selected.layer}${ringName && ringName !== `Layer ${selected.layer}` ? ` · ${ringName}` : ""}`
               : isLayer
                 ? `Group · ${layer.name}`
                 : "Circles"}

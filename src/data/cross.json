@@ -74,5 +74,17 @@
         }
       ]
     }
+  },
+  "outer": {
+    "name": "Outer ring",
+    "gap": 0.08,
+    "layers": [
+      {
+        "name": "Outer ring",
+        "circles": 99,
+        "description": "",
+        "members": []
+      }
+    ]
   }
 }

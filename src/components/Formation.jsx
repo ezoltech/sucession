@@ -496,6 +496,7 @@ export default function Formation({
         geo: g.nodes.map((n) => gapById.get(n.id)),
         fadeTo: g.fade.to,
         fadeFrom: Math.min(g.fade.from, g.fade.to * 0.999),
+        fadeIn: g.fade.inner ?? null,
       })),
       // a link is cut only around the few circles it passes
       links: links.map((l) => {
@@ -563,7 +564,7 @@ export default function Formation({
             <stop offset="1" stopColor="#dcd8cf" />
           </linearGradient>
 
-          {parts.groups.map(({ g, big, holes, geo, fadeTo, fadeFrom }) => {
+          {parts.groups.map(({ g, big, holes, geo, fadeTo, fadeFrom, fadeIn }) => {
             const box = {
               maskUnits: "userSpaceOnUse",
               x: g.cx - big,
@@ -590,7 +591,22 @@ export default function Formation({
                   cy={g.cy}
                   r={fadeTo}
                 >
-                  <stop offset="0" stopColor="white" />
+                  {/* a ring without a centre (the outer ring) also fades out on its inner side */}
+                  {fadeIn ? (
+                    <>
+                      <stop offset="0" stopColor="black" />
+                      <stop
+                        offset={clamp(fadeIn.to / fadeTo, 0, 0.997)}
+                        stopColor="black"
+                      />
+                      <stop
+                        offset={clamp(fadeIn.from / fadeTo, 0, 0.998)}
+                        stopColor="white"
+                      />
+                    </>
+                  ) : (
+                    <stop offset="0" stopColor="white" />
+                  )}
                   <stop
                     offset={clamp(fadeFrom / fadeTo, 0, 0.999)}
                     stopColor="white"
@@ -677,8 +693,9 @@ export default function Formation({
                   duration={1000}
                 />
               ))}
+              {/* halos mark a centre and its first layer; the outer ring has no centre, so it gets none */}
               {g.nodes
-                .filter((n) => n.layer <= 1)
+                .filter((n) => g.center && n.layer <= 1)
                 .map((n) => (
                   <DrawCircle
                     key={`halo-${n.id}`}

@@ -204,6 +204,12 @@ const CROSS_GAP = 0.4; // free thread between the centre group and the arms, as 
 const ARM_LAG = 900; // intro: the arms start drawing after the centre group (ms) …
 const ARM_STAGGER = 140; // … one after the other (ms)
 const LINK_PAD = 1.5; // how close a circle must be to a link for the link to be cut around it
+// ───────── Outer ring ─────────
+// One more group around the whole cross. It has no centre circle of its own: its layers are centred on
+// the middle of the formation and start just outside the furthest reach of the cross, so the whole
+// structure reads as one huge circle. Set in cross.json → "outer".
+const OUTER_GAP = 0.08; // free space between the cross's outer edge and the ring, as a fraction of the cross's reach
+const OUTER_LAG = 1500; // intro: the ring draws in after the arms (ms)
 // How many circles a layer config asks for ("circles": 12, "count": 12, or the number of members)
 function layerCount(cfg) {
   const inline = Array.isArray(cfg?.members)
@@ -226,10 +232,15 @@ function layerCount(cfg) {
  * @param {Array<{circles?:number, name?:string, description?:string|string[], rotation?:number|"auto",
  *                members?:object[], size?:number, radius?:number, threads?:boolean}>} layersConfig
  * @param {{center?: object, layers?: Array<Array<object>>}} circleData
- * @param {{id:string, dir:string, name:string, centerTitle:string, cx:number, cy:number, lag:number, slots:object[], centerR?:number, quiet?:boolean}} opt
+ * A "hollow" group has no centre circle: its first layer starts `firstGap` outside a radius of `inner`
+ * (the outer ring around the cross uses this), and that first layer's threads are woven into each other.
+ *
+ * @param {{id:string, dir:string, name:string, centerTitle:string, cx:number, cy:number, lag:number, slots:object[], centerR?:number, quiet?:boolean,
+ *          hollow?:boolean, inner?:number, firstGap?:number}} opt
  */
 function buildGroup(layersConfig, circleData, opt) {
   const { id, dir, name, centerTitle, cx, cy, lag, slots, quiet } = opt;
+  const hollow = !!opt.hollow;
   const centerR = opt.centerR ?? CENTER_R;
   // the centre group keeps the plain ids ("c", "1-0" …); arms are prefixed ("t:c", "t:1-0" …)
   const pre = id === "c" ? "" : `${id}:`;
@@ -238,25 +249,27 @@ function buildGroup(layersConfig, circleData, opt) {
   // one "slot" per centre circle and per layer: labels switch on per slot as the camera zooms in
   const newSlot = (r) => slots.push({ base: Math.min(r, NODE_R) }) - 1;
 
-  nodes.push({
-    id: `${pre}c`,
-    group: id,
-    ring: null,
-    layer: 0,
-    index: 0,
-    count: 1,
-    x: cx,
-    y: cy,
-    r: centerR,
-    angle: -90,
-    sweep: 0,
-    lag,
-    slot: newSlot(centerR),
-    data: normalise(circleData.center, centerTitle, CENTER_COLOR),
-  });
+  if (!hollow)
+    nodes.push({
+      id: `${pre}c`,
+      group: id,
+      ring: null,
+      layer: 0,
+      index: 0,
+      count: 1,
+      x: cx,
+      y: cy,
+      r: centerR,
+      angle: -90,
+      sweep: 0,
+      lag,
+      slot: newSlot(centerR),
+      data: normalise(circleData.center, centerTitle, CENTER_COLOR),
+    });
 
   let prevR = 0;
-  let prevNodeR = centerR;
+  // a hollow group's first layer is measured from `inner` (the edge of whatever it surrounds)
+  let prevNodeR = hollow ? (opt.inner ?? 0) : centerR;
   let prevAngles = [];
 
   layersConfig.forEach((cfg, li) => {
@@ -271,7 +284,7 @@ function buildGroup(layersConfig, circleData, opt) {
     if (!count) return;
 
     const layerNo = rings.length + 1;
-    const gap = layerNo === 1 ? FIRST_GAP : RING_GAP;
+    const gap = layerNo === 1 ? (opt.firstGap ?? FIRST_GAP) : RING_GAP;
     const edge = prevR + prevNodeR; // outer edge of the layer before
 
     // ── Size + radius ────────────────────────────────────────────────────────
@@ -416,22 +429,28 @@ function buildGroup(layersConfig, circleData, opt) {
   // Each thread is a circle centred on a node that passes exactly through that node's predecessor:
   // the centre for layer 1 (same pattern as before), the closest circle of the layer before for
   // layer 2, 3, 4 … so every new layer is woven into the layers inside it.
+  // A hollow group has no centre to lean on, so its first layer is woven into itself instead: each
+  // thread passes through the circles on either side of it on the same string, braiding the layer
+  // into one continuous chain.
   const guides = [];
   rings.forEach((ring, ri) => {
     if (!ring.threads) return;
+    const chain = hollow && ri === 0;
+    if (chain && ring.count < 2) return;
     const anchors = ri === 0 ? [nodes[0]] : rings[ri - 1].nodes;
     // crowded layers get fainter threads so a 72-circle layer doesn't turn into a black disc
     const alpha = clamp(Math.sqrt(12 / ring.count), 0.28, 1);
-    for (const n of ring.nodes) {
-      let parent = anchors[0];
-      let reach = Infinity;
-      for (const a of anchors) {
-        const d = Math.hypot(n.x - a.x, n.y - a.y);
-        if (d < reach - 1e-6) {
-          reach = d;
-          parent = a;
+    ring.nodes.forEach((n, i) => {
+      let parent = chain ? ring.nodes[(i + 1) % ring.count] : anchors[0];
+      let reach = chain ? Math.hypot(n.x - parent.x, n.y - parent.y) : Infinity;
+      if (!chain)
+        for (const a of anchors) {
+          const d = Math.hypot(n.x - a.x, n.y - a.y);
+          if (d < reach - 1e-6) {
+            reach = d;
+            parent = a;
+          }
         }
-      }
       guides.push({
         id: `g-${n.id}`,
         group: id,
@@ -446,7 +465,7 @@ function buildGroup(layersConfig, circleData, opt) {
         // layer 1 keeps its original timing (420 / 540 / 660 ms); later layers draw in after it
         delay: lag + 420 + (ring.layer - 1) * 260 + n.sweep * 360,
       });
-    }
+    });
   });
 
   // Threads from outer layers reach past the last ring, so they fade out between the outermost
@@ -454,17 +473,40 @@ function buildGroup(layersConfig, circleData, opt) {
   const fade = outer
     ? { from: Math.min(outer.R + outer.r * 1.1, extent * 0.97), to: extent }
     : { from: extent * 0.9, to: extent };
+  // A hollow group's chain also reaches inwards, towards what it surrounds, so it fades out on that
+  // side too: fully drawn from `from` outwards, gone by `to`.
+  const first = rings[0];
+  if (hollow && first)
+    fade.inner = {
+      from: first.R - first.r * 1.1,
+      to: Math.max(0, first.R - first.r * 1.85),
+    };
 
-  return { id, dir, name, cx, cy, lag, nodes, rings, guides, extent, fade };
+  return {
+    id,
+    dir,
+    name,
+    cx,
+    cy,
+    lag,
+    // the group's own centre circle (a hollow group has none)
+    center: hollow ? null : nodes[0],
+    nodes,
+    rings,
+    guides,
+    extent,
+    fade,
+  };
 }
 
-// A straight line from the centre of one group to the centre of another. It is cut around every
-// circle it passes (`nodeIds`), so it runs through the gaps like the other hairlines.
-function buildLink(a, b, lag) {
+// A straight line from the centre of one group to the centre of another (or to `end`, a point that
+// belongs to `b`, such as a spot on the outer ring's string). It is cut around every circle it passes
+// (`nodeIds`), so it runs through the gaps like the other hairlines.
+function buildLink(a, b, lag, end = { x: b.cx, y: b.cy }) {
   const x1 = a.cx;
   const y1 = a.cy;
-  const x2 = b.cx;
-  const y2 = b.cy;
+  const x2 = end.x;
+  const y2 = end.y;
   const len = Math.hypot(x2 - x1, y2 - y1);
   const ux = (x2 - x1) / len;
   const uy = (y2 - y1) / len;
@@ -490,12 +532,16 @@ function buildLink(a, b, lag) {
  * Each arm has the same shape as the middle circle: a centre circle, then layers, each layer saying how many
  * circles it has and the details of each one. An arm whose layers are empty stays a single circle.
  *
- * cross = { gap?: number, size?: number, arms?: { top|right|bottom|left: { name?, size?, center?, layers? } } }
+ * cross = { gap?: number, size?: number, arms?: { top|right|bottom|left: { name?, size?, center?, layers? } },
+ *           outer?: { name?, gap?, links?: boolean, layers? } }
  *   gap     free thread between the centre group's rim and an arm's rim, as a fraction of the centre's and the
  *           biggest arm's extents added together (default 0.4)
  *   size    radius of an arm's centre circle as a fraction of the middle circle's (default 0.7); an arm may set its own
  *   center  the arm's centre circle, same fields as `center` in circles.json
  *   layers  the arm's layers, same format as layers.json: [{ name, circles, description, members: [details of each circle] }]
+ *   outer   a ring around the whole cross (no centre circle of its own). "gap" is the free space between the cross and
+ *           the ring as a fraction of the cross's reach (default 0.08); "layers" works like an arm's layers;
+ *           the cross's four lines run on from each arm out to the ring unless "links" is false
  */
 export function buildFormation(layersConfig = [], circleData = {}, cross = null) {
   const slots = [];
@@ -557,6 +603,45 @@ export function buildFormation(layersConfig = [], circleData = {}, cross = null)
       groups.push(g);
       links.push(buildLink(main, g, 350 + i * 90));
     });
+  }
+
+  // The outer ring: layers centred on the middle that circle everything built so far. It is measured
+  // from the furthest reach of the cross, so it moves out on its own when a layer is added anywhere.
+  const outer = cross?.outer;
+  const outerLayers = Array.isArray(outer?.layers) ? outer.layers : [];
+  if (outerLayers.some((l) => layerCount(l) > 0)) {
+    const reach = Math.max(
+      ...groups.map((g) => Math.hypot(g.cx, g.cy) + g.extent),
+    );
+    const gap = Number(outer.gap ?? OUTER_GAP);
+    const name = outer.name || "Outer ring";
+    const arms = groups.slice(1);
+    const ring = buildGroup(outerLayers, { layers: [] }, {
+      id: "o",
+      dir: "outer",
+      name,
+      centerTitle: name,
+      cx: 0,
+      cy: 0,
+      lag: OUTER_LAG,
+      slots,
+      hollow: true,
+      inner: reach,
+      firstGap: reach * (Number.isFinite(gap) && gap >= 0 ? gap : OUTER_GAP),
+    });
+    groups.push(ring);
+
+    // The four lines of the cross carry on past each arm, straight out to the ring's string, so the cross
+    // and the ring are joined like a wheel. "links": false in cross.json → outer switches this off.
+    if (outer.links !== false && ring.rings.length) {
+      const R = ring.rings[0].R;
+      arms.forEach((g, i) => {
+        const d = Math.hypot(g.cx, g.cy);
+        if (!d) return;
+        const end = { x: (g.cx / d) * R, y: (g.cy / d) * R };
+        links.push(buildLink(g, ring, OUTER_LAG - 200 + i * 90, end));
+      });
+    }
   }
 
   const nodes = groups.flatMap((g) => g.nodes);

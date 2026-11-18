@@ -1264,6 +1264,29 @@ button.token:hover {
   border-color: var(--ink);
 }
 
+/* the outer ring: a circle round the whole little cross, under the dots */
+.rail-group-ring {
+  grid-row: 1 / 4;
+  grid-column: 1 / 4;
+  z-index: 0;
+  width: 54px;
+  height: 54px;
+  background: transparent;
+}
+
+.rail-group:not(.rail-group-ring) {
+  z-index: 1;
+}
+
+.rail-group-ring:hover {
+  transform: scale(1.08);
+}
+
+.rail-group-ring.is-active {
+  background: transparent;
+  border-width: 1.6px;
+}
+
 /* the overview lists the groups of every arm under its own small heading */
 .member-set + .member-set {
   margin-top: 18px;
