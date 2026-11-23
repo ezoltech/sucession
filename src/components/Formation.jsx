@@ -9,6 +9,7 @@ import {
 } from "react";
 import { ease } from "../lib/easing";
 import { NODE_R } from "../lib/formation";
+import { optimizedImageUrl } from "../lib/images";
 
 const TITLE_K = 1.3; // title baseline radius (× node radius)
 const SUB_K = 1.52; // subtitle baseline radius
@@ -28,6 +29,9 @@ const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 // both sides and can go all the way round the circle.
 const labelCircle = (x, y, R) =>
   `M ${x} ${y - R} A ${R} ${R} 0 0 0 ${x} ${y + R} A ${R} ${R} 0 0 0 ${x} ${y - R}`;
+const circlePath = ({ x, y, r }) =>
+  `M${x - r} ${y} A${r} ${r} 0 1 0 ${x + r} ${y} A${r} ${r} 0 1 0 ${x - r} ${y}`;
+const guidePath = (guides) => guides.map(circlePath).join(" ");
 // Semicircle through the top of a circle, left → right, so layer names read upright.
 const topArc = (cx, cy, R) =>
   `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`;
@@ -72,19 +76,12 @@ const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-// Gaps cut into the hairlines beneath every visible label. Memoised per group: hovering a circle only
-// re-renders the group it belongs to.
-const Gaps = memo(function Gaps({ geo, labelKey, hoveredId, selectedId }) {
+// Gaps cut into the hairlines beneath labels that are currently visible.
+const Gaps = memo(function Gaps({ geo }) {
   return geo.map((g) => (
     <path
       key={`gap-${g.id}`}
       className="label-gap"
-      style={{
-        opacity:
-          labelKey[g.slot] === "1" || g.id === hoveredId || g.id === selectedId
-            ? 1
-            : 0,
-      }}
       d={g.d}
       fill="black"
     />
@@ -109,20 +106,22 @@ const Arcs = memo(function Arcs({ nodes }) {
   ));
 });
 
-// One thread per circle of every layer, each passing through its predecessor
-const Threads = memo(function Threads({ guides, activeLayer }) {
-  return guides.map((g, i) => (
-    <DrawCircle
-      key={g.id}
-      className={`hair guide guide-l${g.layer ?? 1}${g.ring === activeLayer ? " is-active" : ""}`}
-      cx={g.x}
-      cy={g.y}
-      r={g.r}
-      delay={g.delay ?? 420 + i * 120}
-      duration={1300}
-      style={{ "--ga": g.alpha ?? 1 }}
-    />
-  ));
+// One compound path per ring holds the thread circle for every member.
+const Threads = memo(function Threads({ rings, activeLayer }) {
+  return rings.map(
+    (ring) =>
+      ring.guides.length > 0 && (
+        <path
+          key={`guides-${ring.key}`}
+          className={`hair guide guide-l${ring.layer}${ring.key === activeLayer ? " is-active" : ""}`}
+          d={guidePath(ring.guides)}
+          style={{
+            "--ga": ring.guides[0].alpha ?? 1,
+            "--delay": `${ring.guides[0].delay}ms`,
+          }}
+        />
+      ),
+  );
 });
 
 // Invisible, fatter copies of the strings and threads so they are easy to click
@@ -143,18 +142,21 @@ const Hits = memo(function Hits({ group, onPick, onHover }) {
           onPointerLeave={() => onHover(null)}
         />
       ))}
-      {group.guides.map((g) => (
-        <circle
-          key={`hit-${g.id}`}
-          className="hit hit-guide"
-          cx={g.x}
-          cy={g.y}
-          r={g.r}
-          onClick={(e) => onPick(g.ring, e)}
-          onPointerEnter={() => onHover(g.ring)}
-          onPointerLeave={() => onHover(null)}
-        />
-      ))}
+      {group.rings.map(
+        (ring) =>
+          ring.guides.length > 0 && (
+            <path
+              key={`hit-guides-${ring.key}`}
+              className="hit hit-guide"
+              d={guidePath(ring.guides)}
+              role="button"
+              aria-label={`Select ${ring.name}`}
+              onClick={(e) => onPick(ring.key, e)}
+              onPointerEnter={() => onHover(ring.key)}
+              onPointerLeave={() => onHover(null)}
+            />
+          ),
+      )}
     </>
   );
 });
@@ -180,9 +182,13 @@ export default function Formation({
   const blur = useRef(0);
   const dragged = useRef(false);
   const initialised = useRef(false);
+  const initialView = useRef(true);
   // One "1"/"0" per slot (a centre circle or a layer of any group): do its circle labels show at this zoom?
   const [labelKey, setLabelKey] = useState("");
   const labelKeyRef = useRef("");
+  const [imageHrefs, setImageHrefs] = useState(() => new Map());
+  const imageHrefsRef = useRef(imageHrefs);
+  const seenImageIds = useRef(new Set());
   // How wide each label really is (measured in the browser) and how much its font has to shrink,
   // if at all, to fit once around its circle. id → { wt, ws, t, s }
   const [fits, setFits] = useState(() => new Map());
@@ -197,12 +203,23 @@ export default function Formation({
     () => (activeLayer ? rings.find((r) => r.key === activeLayer) || null : null),
     [rings, activeLayer],
   );
-  const nodeById = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
-  const groupOf = useMemo(
-    () => new Map(nodes.map((n) => [n.id, n.group])),
-    [nodes],
+  const imageNodes = useMemo(() => nodes.filter((n) => n.data.image), [nodes]);
+  const firstRing = useMemo(
+    () => rings.find((ring) => ring.group === "c") ?? null,
+    [rings],
   );
-
+  const initialImageIds = useMemo(
+    () =>
+      new Set(
+        imageNodes
+          .filter((node) => node.id === "c" || node.ring === firstRing?.key)
+          .map((node) => node.id),
+      ),
+    [imageNodes, firstRing],
+  );
+  const initialExtent = firstRing
+    ? firstRing.R + firstRing.r
+    : (nodes.find((node) => node.id === "c")?.r ?? extent);
   // Circle radius (world units) that decides when a layer's labels appear. Capped at NODE_R, so
   // layers with normal-sized circles behave exactly as before; small circles just need more zoom.
   const labelBase = useMemo(() => slots.map((s) => s.base), [slots]);
@@ -214,6 +231,11 @@ export default function Formation({
   const fitScale = useCallback(
     (st) => clamp((Math.min(st.w, st.h) * 0.92) / (2 * extent), 0.05, 20),
     [extent],
+  );
+  const initialScale = useCallback(
+    (st) =>
+      clamp((Math.min(st.w, st.h) * 0.92) / (2 * initialExtent), 0.05, 20),
+    [initialExtent],
   );
 
   const targetFor = useCallback(
@@ -252,7 +274,41 @@ export default function Formation({
       labelKeyRef.current = key;
       setLabelKey(key);
     }
-  }, [labelBase]);
+
+    const nextImages = new Map();
+    const screenX = st.x + st.w / 2;
+    const screenY = st.y + st.h / 2;
+    for (const n of imageNodes) {
+      const radius = n.r * s;
+      const sx = screenX + (n.x - x) * s;
+      const sy = screenY + (n.y - y) * s;
+      const visible =
+        sx + radius >= st.x &&
+        sx - radius <= st.x + st.w &&
+        sy + radius >= st.y &&
+        sy - radius <= st.y + st.h;
+      const initialImage =
+        initialView.current && initialImageIds.has(n.id);
+      const fullSize =
+        !initialView.current && (n.id === selectedId || radius * 2 >= 48);
+      if (visible && (fullSize || initialImage))
+        seenImageIds.current.add(n.id);
+      if (visible && seenImageIds.current.has(n.id))
+        nextImages.set(
+          n.id,
+          optimizedImageUrl(n.data.image, fullSize ? 1024 : 256),
+        );
+    }
+
+    const previousImages = imageHrefsRef.current;
+    const sameImages =
+      nextImages.size === previousImages.size &&
+      [...nextImages].every(([id, src]) => previousImages.get(id) === src);
+    if (!sameImages) {
+      imageHrefsRef.current = nextImages;
+      setImageHrefs(nextImages);
+    }
+  }, [labelBase, imageNodes, initialImageIds, selectedId]);
 
   const setBlur = useCallback((v) => {
     blur.current = v;
@@ -310,7 +366,10 @@ export default function Formation({
   // Camera follows the selection (a circle or a whole layer) and the free stage area
   useLayoutEffect(() => {
     stageRef.current = stage;
-    const target = targetFor(selected, stage, active);
+    if (selected || active) initialView.current = false;
+    const target = initialView.current
+      ? { x: firstRing?.cx ?? 0, y: firstRing?.cy ?? 0, s: initialScale(stage) }
+      : targetFor(selected, stage, active);
     if (!initialised.current) {
       initialised.current = true;
       cam.current = target;
@@ -318,7 +377,16 @@ export default function Formation({
       return;
     }
     flyTo(target, 1000);
-  }, [stage, selected, active, targetFor, flyTo, apply]);
+  }, [
+    stage,
+    selected,
+    active,
+    firstRing,
+    initialScale,
+    targetFor,
+    flyTo,
+    apply,
+  ]);
 
   useEffect(() => () => cancelAnimationFrame(flight.current), []);
 
@@ -330,6 +398,7 @@ export default function Formation({
 
     const down = (e) => {
       if (e.button !== 0) return;
+      initialView.current = false;
       cancelAnimationFrame(flight.current);
       setBlur(0);
       start = {
@@ -368,6 +437,7 @@ export default function Formation({
     };
     const wheel = (e) => {
       e.preventDefault();
+      initialView.current = false;
       cancelAnimationFrame(flight.current);
       setBlur(0);
       const st = stageRef.current;
@@ -408,11 +478,11 @@ export default function Formation({
     const old = fitsRef.current;
     const next = new Map();
     let changed = false;
-    for (const el of svg.querySelectorAll("g.node[data-node]")) {
-      const id = el.getAttribute("data-node");
+    for (const title of svg.querySelectorAll(".label-title")) {
+      const el = title.closest("g.node[data-node]");
+      const id = el?.getAttribute("data-node");
       const n = byId.get(id);
-      const title = el.querySelector(".label-title");
-      if (!n || !title) continue;
+      if (!n || !el) continue;
       const sub = el.querySelector(".label-sub");
       const was = old.get(id) ?? { ...NO_FIT, wt: 0, ws: 0 };
       // widths at the normal font size. Text width is proportional to the font size, so scale by the
@@ -449,7 +519,7 @@ export default function Formation({
     fonts?.ready?.then(measureLabels);
     fonts?.addEventListener?.("loadingdone", measureLabels);
     return () => fonts?.removeEventListener?.("loadingdone", measureLabels);
-  }, [measureLabels]);
+  }, [measureLabels, labelKey, selectedId, hoveredId]);
 
   const handleBackgroundClick = (e) => {
     if (dragged.current) return;
@@ -470,14 +540,18 @@ export default function Formation({
     n.lag + (n.layer === 0 ? 120 : 220 + n.sweep * 560 + (n.layer - 1) * 70);
 
   const anyLabels = labelKey.includes("1");
-  const nodeLabelVisible = (n) =>
-    labelKey[n.slot] === "1" || n.id === hoveredId || n.id === selectedId;
+  const nodeLabelVisible = useCallback(
+    (n) =>
+      labelKey[n.slot] === "1" || n.id === hoveredId || n.id === selectedId,
+    [labelKey, hoveredId, selectedId],
+  );
+  const visibleLabelNodes = useMemo(
+    () => nodes.filter(nodeLabelVisible),
+    [nodes, nodeLabelVisible],
+  );
 
-  // Static geometry is built once; only the on/off state of the label gaps changes on hover or zoom.
+  // Label masks contain only labels currently visible; node fills cover lines underneath them.
   const parts = useMemo(() => {
-    const holeFor = (n) => (
-      <circle key={n.id} cx={n.x} cy={n.y} r={n.r * 1.2} fill="black" />
-    );
     const gapFor = (n) => {
       const half = labelHalfAngle(n, fits.get(n.id));
       return {
@@ -486,37 +560,34 @@ export default function Formation({
         d: sector(n.x, n.y, n.r * 1.12, n.r * 1.64, 90 - half, 90 + half),
       };
     };
-    const gapById = new Map(nodes.map((n) => [n.id, gapFor(n)]));
+    const gapById = new Map(visibleLabelNodes.map((n) => [n.id, gapFor(n)]));
     return {
-      // every group cuts its hairlines around its own circles only, so a mask never grows with the cross
       groups: groups.map((g) => ({
         g,
         big: g.extent * 4,
-        holes: g.nodes.map(holeFor),
-        geo: g.nodes.map((n) => gapById.get(n.id)),
+        geo: g.nodes.flatMap((n) => {
+          const gap = gapById.get(n.id);
+          return gap ? [gap] : [];
+        }),
         fadeTo: g.fade.to,
         fadeFrom: Math.min(g.fade.from, g.fade.to * 0.999),
         fadeIn: g.fade.inner ?? null,
       })),
-      // a link is cut only around the few circles it passes
       links: links.map((l) => {
-        const hit = l.nodeIds.map((id) => nodeById.get(id));
-        const pad = 24;
+        const nodeIds = new Set(l.nodeIds);
         return {
           l,
-          x: Math.min(l.x1, l.x2) - pad,
-          y: Math.min(l.y1, l.y2) - pad,
-          w: Math.abs(l.x2 - l.x1) + pad * 2,
-          h: Math.abs(l.y2 - l.y1) + pad * 2,
-          holes: hit.map(holeFor),
-          geo: hit.map((n) => gapById.get(n.id)),
+          x: Math.min(l.x1, l.x2) - 24,
+          y: Math.min(l.y1, l.y2) - 24,
+          w: Math.abs(l.x2 - l.x1) + 48,
+          h: Math.abs(l.y2 - l.y1) + 48,
+          geo: visibleLabelNodes.flatMap((n) =>
+            nodeIds.has(n.id) ? [gapById.get(n.id)] : [],
+          ),
         };
       }),
     };
-  }, [nodes, groups, links, nodeById, fits]);
-
-  // hover / selection only matter to the group that owns the circle
-  const ownId = (id, g) => (id && groupOf.get(id) === g.id ? id : null);
+  }, [groups, links, visibleLabelNodes, fits]);
 
   const handleNodeSelect = useCallback(
     (id) => {
@@ -564,7 +635,7 @@ export default function Formation({
             <stop offset="1" stopColor="#dcd8cf" />
           </linearGradient>
 
-          {parts.groups.map(({ g, big, holes, geo, fadeTo, fadeFrom, fadeIn }) => {
+          {parts.groups.map(({ g, big, geo, fadeTo, fadeFrom, fadeIn }) => {
             const box = {
               maskUnits: "userSpaceOnUse",
               x: g.cx - big,
@@ -573,14 +644,7 @@ export default function Formation({
               height: big * 2,
             };
             const rect = { x: box.x, y: box.y, width: box.width, height: box.height };
-            const gaps = (
-              <Gaps
-                geo={geo}
-                labelKey={labelKey}
-                hoveredId={ownId(hoveredId, g)}
-                selectedId={ownId(selectedId, g)}
-              />
-            );
+            const gaps = <Gaps geo={geo} />;
             return (
               <g key={`masks-${g.id}`}>
                 {/* Fades the group's thread pattern out around its outermost layer so it always fits */}
@@ -617,10 +681,9 @@ export default function Formation({
                   <rect {...rect} fill={`url(#thread-fade-grad-${g.id})`} />
                 </mask>
 
-                {/* Cuts the hairlines around every circle and beneath visible labels */}
+                {/* Labels need gaps; the opaque circles themselves cover lines underneath. */}
                 <mask id={`line-mask-${g.id}`} {...box}>
                   <rect {...rect} fill="white" />
-                  {holes}
                   {gaps}
                 </mask>
 
@@ -633,8 +696,7 @@ export default function Formation({
             );
           })}
 
-          {/* Each link is cut around the circles it passes */}
-          {parts.links.map(({ l, x, y, w, h, holes, geo }) => (
+          {parts.links.map(({ l, x, y, w, h, geo }) => (
             <mask
               key={`link-mask-${l.id}`}
               id={`link-mask-${l.id}`}
@@ -645,17 +707,11 @@ export default function Formation({
               height={h}
             >
               <rect x={x} y={y} width={w} height={h} fill="white" />
-              {holes}
-              <Gaps
-                geo={geo}
-                labelKey={labelKey}
-                hoveredId={hoveredId}
-                selectedId={selectedId}
-              />
+              <Gaps geo={geo} />
             </mask>
           ))}
 
-          {nodes.length > 0 && <Arcs nodes={nodes} />}
+          {visibleLabelNodes.length > 0 && <Arcs nodes={visibleLabelNodes} />}
 
           {/* Where each layer's name is written */}
           {rings.map((ring) => (
@@ -667,8 +723,11 @@ export default function Formation({
           ))}
         </defs>
 
-        <g ref={camGroupRef} className="camera">
-          {/* One set of strings, halos and threads per group; every group is cut around its own circles */}
+        <g
+          ref={camGroupRef}
+          className={`camera${nodes.length >= 200 ? " is-dense" : ""}`}
+        >
+          {/* One set of strings, halos and threads per group */}
           {parts.groups.map(({ g }) => (
             <g
               key={`lines-${g.id}`}
@@ -678,7 +737,7 @@ export default function Formation({
             >
               <g className="threads" mask={`url(#thread-fade-${g.id})`}>
                 <Threads
-                  guides={g.guides}
+                  rings={g.rings}
                   activeLayer={active?.group === g.id ? activeLayer : null}
                 />
               </g>
@@ -801,6 +860,7 @@ export default function Formation({
               hovered={n.id === hoveredId}
               selected={n.id === selectedId}
               labelVisible={nodeLabelVisible(n)}
+              imageSrc={imageHrefs.get(n.id)}
               fit={fits.get(n.id) ?? NO_FIT}
               onHover={onHover}
               onSelect={handleNodeSelect}
@@ -837,6 +897,7 @@ const Node = memo(function Node({
   hovered,
   selected,
   labelVisible,
+  imageSrc,
   fit,
   onHover,
   onSelect,
@@ -870,9 +931,9 @@ const Node = memo(function Node({
             r={n.r}
             style={data.color ? { fill: data.color } : undefined}
           />
-          {data.image && (
+          {imageSrc && (
             <image
-              href={data.image}
+              href={imageSrc}
               x={n.x - n.r}
               y={n.y - n.r}
               width={n.r * 2}
@@ -885,34 +946,36 @@ const Node = memo(function Node({
         </g>
       </g>
 
-      <g className={`label${labelVisible ? " is-on" : ""}`} aria-hidden="true">
-        <text
-          className="label-title"
-          style={{ fontSize: tfs, letterSpacing: tfs * 0.01 }}
-        >
-          <textPath
-            href={`#arc-t-${dom(n.id)}`}
-            startOffset="50%"
-            textAnchor="middle"
-          >
-            {data.title}
-          </textPath>
-        </text>
-        {data.subtitle && (
+      {labelVisible && (
+        <g className="label is-on" aria-hidden="true">
           <text
-            className="label-sub"
-            style={{ fontSize: sfs, letterSpacing: sfs * 0.14 }}
+            className="label-title"
+            style={{ fontSize: tfs, letterSpacing: tfs * 0.01 }}
           >
             <textPath
-              href={`#arc-s-${dom(n.id)}`}
+              href={`#arc-t-${dom(n.id)}`}
               startOffset="50%"
               textAnchor="middle"
             >
-              {data.subtitle}
+              {data.title}
             </textPath>
           </text>
-        )}
-      </g>
+          {data.subtitle && (
+            <text
+              className="label-sub"
+              style={{ fontSize: sfs, letterSpacing: sfs * 0.14 }}
+            >
+              <textPath
+                href={`#arc-s-${dom(n.id)}`}
+                startOffset="50%"
+                textAnchor="middle"
+              >
+                {data.subtitle}
+              </textPath>
+            </text>
+          )}
+        </g>
+      )}
     </g>
   );
 });

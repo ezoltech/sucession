@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { searchFormation } from "../lib/formation";
+import { optimizedImageUrl } from "../lib/images";
 
 const enter = {
   initial: { opacity: 0, y: 8, filter: "blur(6px)" },
@@ -369,7 +370,13 @@ export default function Panel({
                   aria-label={`Focus ${isNode ? d.title : centre.data.title}`}
                 >
                   {(isNode ? d.image : centre.data.image) ? (
-                    <img src={isNode ? d.image : centre.data.image} alt="" />
+                    <img
+                      src={optimizedImageUrl(
+                        isNode ? d.image : centre.data.image,
+                        384,
+                      )}
+                      alt=""
+                    />
                   ) : (
                     <span className="token-empty" />
                   )}

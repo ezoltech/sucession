@@ -2,10 +2,16 @@
 
 A radial archive in the style of the reference video: one fixed circle at the centre, with any number of concentric layers of circles around it. Hover a circle to read its name. Click it and the camera flies in with a motion-blur zoom, and the side panel switches to that circle's details.
 
+For the full architecture, data flow, controls, and image-performance behavior, see
+[howitworks.md](./howitworks.md).
+
 ```bash
 npm install
 npm run dev
 ```
+
+Local JPEG/PNG images can stay in `public/images/`; optimized WebP variants are generated
+automatically for development and production builds.
 
 ## Configure the formation
 

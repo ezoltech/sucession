@@ -203,7 +203,7 @@ const ARM_SIZE = 0.7; // an arm's centre circle, as a fraction of the middle one
 const CROSS_GAP = 0.4; // free thread between the centre group and the arms, as a fraction of their two sizes added together
 const ARM_LAG = 900; // intro: the arms start drawing after the centre group (ms) …
 const ARM_STAGGER = 140; // … one after the other (ms)
-const LINK_PAD = 1.5; // how close a circle must be to a link for the link to be cut around it
+const LINK_PAD = 1.5; // clearance around labels intersected by a link
 // ───────── Outer ring ─────────
 // One more group around the whole cross. It has no centre circle of its own: its layers are centred on
 // the middle of the formation and start just outside the furthest reach of the cross, so the whole
@@ -365,6 +365,7 @@ function buildGroup(layersConfig, circleData, opt) {
       threads: cfg.threads !== false,
       slot: newSlot(r),
       nodes: [],
+      guides: [],
     };
 
     for (let i = 0; i < count; i++) {
@@ -451,7 +452,7 @@ function buildGroup(layersConfig, circleData, opt) {
             parent = a;
           }
         }
-      guides.push({
+      const guide = {
         id: `g-${n.id}`,
         group: id,
         ring: ring.key,
@@ -464,7 +465,9 @@ function buildGroup(layersConfig, circleData, opt) {
         alpha,
         // layer 1 keeps its original timing (420 / 540 / 660 ms); later layers draw in after it
         delay: lag + 420 + (ring.layer - 1) * 260 + n.sweep * 360,
-      });
+      };
+      guides.push(guide);
+      ring.guides.push(guide);
     });
   });
 
@@ -500,8 +503,8 @@ function buildGroup(layersConfig, circleData, opt) {
 }
 
 // A straight line from the centre of one group to the centre of another (or to `end`, a point that
-// belongs to `b`, such as a spot on the outer ring's string). It is cut around every circle it passes
-// (`nodeIds`), so it runs through the gaps like the other hairlines.
+// belongs to `b`, such as a spot on the outer ring's string). Its mask only needs label gaps:
+// opaque node fills cover the line itself.
 function buildLink(a, b, lag, end = { x: b.cx, y: b.cy }) {
   const x1 = a.cx;
   const y1 = a.cy;
@@ -514,11 +517,21 @@ function buildLink(a, b, lag, end = { x: b.cx, y: b.cy }) {
   for (const n of [...a.nodes, ...b.nodes]) {
     const along = (n.x - x1) * ux + (n.y - y1) * uy;
     const across = Math.abs((n.x - x1) * uy - (n.y - y1) * ux);
-    // 1.7 × radius also covers the curved label that sits under a circle
     if (along > -n.r && along < len + n.r && across < n.r * 1.7 + LINK_PAD)
       nodeIds.push(n.id);
   }
-  return { id: `${a.id}-${b.id}`, from: a.id, to: b.id, x1, y1, x2, y2, len, nodeIds, lag };
+  return {
+    id: `${a.id}-${b.id}`,
+    from: a.id,
+    to: b.id,
+    x1,
+    y1,
+    x2,
+    y2,
+    len,
+    nodeIds,
+    lag,
+  };
 }
 
 /**
