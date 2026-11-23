@@ -218,7 +218,7 @@
         "name": "ቅድስት ሶስና",
         "subtitle": "",
         "image": "/images/demo/susana.jpg",
-        "description": ["First paragraph", "Second"],
+        "description": ["Fir st paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
       },
       {

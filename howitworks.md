@@ -135,7 +135,37 @@ every member. The panel and stage use the same optimized URL for a selected port
 ## Styling and motion
 
 `src/index.css` defines the layout, typography, responsive breakpoints, layer/node states, reduced
-motion behavior, and light/dark theme tokens. `App.jsx` persists the selected theme in local storage.
+motion behavior, and light/dark theme tokens. The default theme is light; `App.jsx` applies the saved
+choice to `data-theme` on the document root and persists it in local storage.
+
+### Theme colors
+
+The palette is defined by the CSS custom properties in [`src/index.css`](./src/index.css). The
+eight-digit hex values include an alpha channel in the final two digits.
+
+| UI role | Light | Dark |
+| --- | --- | --- |
+| Ink and primary text | `#0c0a09` | `#f3efe6` |
+| Secondary text | `#0c0a09b3` | `#f3efe6b3` |
+| Medium text | `#0c0a09a6` | `#f3efe6a6` |
+| Tertiary text | `#0c0a0999` | `#f3efe699` |
+| Disabled text | `#0c0a096b` | `#f3efe66b` |
+| Base surface | `#e2ddd6` | `#0a0908` |
+| Mid surface | `#e8e4dd` | `#100f0d` |
+| Panel surface | `#eeeae3` | `#151311` |
+| Raised surface | `#fafaf8` | `#1e1b18` |
+| Surface wash | `#0c0a091a` | `#f3efe61a` |
+| Subtle border | `#0c0a091a` | `#f3efe61a` |
+| Medium border | `#0c0a0926` | `#f3efe626` |
+| Strong border | `#0c0a0940` | `#f3efe640` |
+| Warm accent | `#c25e09` | `#e3ab52` |
+| Thumbprint accent | `#c87220` | `#d9b66a` |
+
+Formation threads use the ink color in light mode. In dark mode, the threads and straight links use
+a metallic gradient with stops `#f2dc96`, `#c9a24e`, `#e7e4dc`, `#b8984f`, and `#dcd8cf`. Dark
+circle edges use `#f3efe6`; the empty-circle fill uses `#f3efe612`. These specialized SVG colors and
+opacities are defined alongside the theme tokens.
+
 `src/lib/easing.js` provides cubic-bezier easing functions used by the camera. Framer Motion animates
 panel content changes.
 
