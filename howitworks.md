@@ -38,8 +38,9 @@ in `circles.json`; fields not supplied inline fall back to `circles.json`. Layer
 geometry: absent entries become placeholders and surplus entries are ignored. Arm and outer-ring
 members are configured inline in `cross.json`.
 
-The checked-in configuration currently creates 558 circles: 439 in the centre group, 20 in the
-four arms, and 99 in the outer ring. Empty placeholders are intentional and remain selectable.
+The checked-in configuration currently creates 459 circles: 439 in the centre group and 20 in the
+four arms. The formation builder still supports an optional outer ring, but none is configured.
+Empty placeholders are intentional and remain selectable.
 
 ## Building the geometry
 
@@ -120,7 +121,7 @@ only raster versions sent with the production site.
 
 The panel uses the 384px version. The initial stage view frames the centre and its first ring, and
 attaches the centre portrait and first-ring portraits using their 256px variants. This keeps the
-opening view useful without loading every image in the 558-circle formation. Other portraits remain
+opening view useful without loading every image in the 459-circle formation. Other portraits remain
 deferred: the stage requests the 1024px version only when an image-bearing circle is selected or
 reaches at least 48 CSS pixels in diameter inside the visible stage. Once shown, a portrait stays in
 the session's seen-image set and uses its smaller 256px version when zoomed back below that size.

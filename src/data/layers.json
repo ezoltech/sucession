@@ -255,6 +255,34 @@
         "image": "/images/demo/agapis.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ታኦድራ",
+        "subtitle": "",
+        "image": "/images/demo/tewodra.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ክርስቲያና (አጥሩኒስ)",
+        "subtitle": "",
+        "image": "/images/demo/christina.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ዮስቲና ሰማዕት",
+        "subtitle": "",
+        "image": "/images/demo/justina.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት እሌኒ",
+        "subtitle": "",
+        "image": "/images/demo/helena.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
