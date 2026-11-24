@@ -734,6 +734,55 @@
         "image": "/images/demo/nicholas.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ እስጲርዶን",
+        "subtitle": "",
+        "image": "/images/demo/spyridon.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ያዕቆብ ዘንጽቢን",
+        "subtitle": "",
+        "image": "/images/demo/jacobn.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አባ  በፍኑቲዮስ",
+        "subtitle": "",
+        "image": "/images/demo/patapius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጶጣሞን",
+        "subtitle": "",
+        "image": "/images/demo/potamon.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ለውንትዮስ ዘቂሳርያ",
+        "subtitle": "",
+        "image": "/images/demo/leontius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ እለእስክንድሮስ ዘቁስጥንጥንያ",
+        "subtitle": "",
+        "image": "/images/demo/alexanderk.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ማርቄሎስ ዘዕንቆራ",
+        "subtitle": "",
+        "image": "/images/demo/marcellus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   }
