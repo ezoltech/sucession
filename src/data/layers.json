@@ -677,6 +677,50 @@
     "name": "፫፻፲፰ቱ ርቱዐነ ሃይማኖት",
     "circles": 318,
     "description": "",
-    "members": []
+    "members": [
+      {
+        "name": "ቅዱስ ቶማስ ዘመርዓስ",
+        "subtitle": "",
+        "image": "/images/demo/thomasz.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+
+      {
+        "name": "ቅዱስ እለእስክንድሮስ",
+        "subtitle": "",
+        "image": "/images/demo/alexander.png",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አትናቴዎስ ሃዋርያዊ ሊቀ ጳጳሳት ዘእስክንድርያ",
+        "subtitle": "",
+        "image": "/images/demo/athnasius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኤዎስጣቴዎስ ዘአንጾኪያ",
+        "subtitle": "",
+        "image": "/images/demo/eustathios.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ መቃርስ ዘኢየሩሳሌም",
+        "subtitle": "",
+        "image": "/images/demo/macarius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ባስልዮስ ዘቂሳርያ",
+        "subtitle": "",
+        "image": "/images/demo/basil.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      }
+    ]
   }
 ]
