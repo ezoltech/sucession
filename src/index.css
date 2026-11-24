@@ -851,6 +851,26 @@ button.token:hover {
 
 /* ───────── Small screens: rail hides, panel becomes a bottom sheet ───────── */
 @media (max-width: 767px) {
+  .camera.is-dense .threads,
+  .camera.is-dense .hit-guide {
+    display: none;
+  }
+
+  .camera.is-dense .node-in,
+  .camera .guide {
+    animation: none;
+  }
+
+  .panel {
+    background: var(--surface-panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .panel::after {
+    display: none;
+  }
+
   .rail-slot {
     display: none;
   }

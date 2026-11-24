@@ -94,6 +94,12 @@ scores titles above subtitles, descriptions, details, and layer descriptions.
 - Layer names are curved along the ring. Hovering a ring reveals its name; selecting it highlights
   the string and switches the panel to the layer's overview.
 
+On narrow screens, circle labels are limited to the hovered or selected circle, touch pointers do
+not trigger desktop hover-state updates, and pan events are applied at most once per animation
+frame. Image visibility is resynchronized after camera movement settles. Mobile also skips the
+whole-SVG motion blur, thread paths, node entrance animations, and frosted-panel backdrop filter to
+reduce paint and compositing work; the concentric ring outlines remain visible.
+
 The current interaction state is owned by `App.jsx`. Selecting a circle clears layer selection;
 selecting a layer clears circle selection. `Panel.jsx` renders overview, circle details, or layer
 members accordingly. `Rail.jsx` switches among groups and their chapters. Search results can select

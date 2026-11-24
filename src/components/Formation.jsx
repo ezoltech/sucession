@@ -138,8 +138,12 @@ const Hits = memo(function Hits({ group, onPick, onHover }) {
           role="button"
           aria-label={`Select ${ring.name}`}
           onClick={(e) => onPick(ring.key, e)}
-          onPointerEnter={() => onHover(ring.key)}
-          onPointerLeave={() => onHover(null)}
+          onPointerEnter={(e) => {
+            if (e.pointerType !== "touch") onHover(ring.key);
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType !== "touch") onHover(null);
+          }}
         />
       ))}
       {group.rings.map(
@@ -152,8 +156,12 @@ const Hits = memo(function Hits({ group, onPick, onHover }) {
               role="button"
               aria-label={`Select ${ring.name}`}
               onClick={(e) => onPick(ring.key, e)}
-              onPointerEnter={() => onHover(ring.key)}
-              onPointerLeave={() => onHover(null)}
+              onPointerEnter={(e) => {
+                if (e.pointerType !== "touch") onHover(ring.key);
+              }}
+              onPointerLeave={(e) => {
+                if (e.pointerType !== "touch") onHover(null);
+              }}
             />
           ),
       )}
@@ -189,6 +197,9 @@ export default function Formation({
   const [imageHrefs, setImageHrefs] = useState(() => new Map());
   const imageHrefsRef = useRef(imageHrefs);
   const seenImageIds = useRef(new Set());
+  const imageSyncTimer = useRef(0);
+  const panFrame = useRef(0);
+  const pendingCamera = useRef(null);
   // How wide each label really is (measured in the browser) and how much its font has to shrink,
   // if at all, to fit once around its circle. id → { wt, ws, t, s }
   const [fits, setFits] = useState(() => new Map());
@@ -209,10 +220,7 @@ export default function Formation({
     [rings],
   );
   const initialRings = useMemo(
-    () =>
-      rings.filter(
-        (ring) => ring.group === "c" && ring.layer <= 3,
-      ),
+    () => rings.filter((ring) => ring.group === "c" && ring.layer <= 3),
     [rings],
   );
   const initialRingKeys = useMemo(
@@ -271,24 +279,11 @@ export default function Formation({
     [fitScale],
   );
 
-  const apply = useCallback(() => {
-    const g = camGroupRef.current;
-    if (!g) return;
+  const syncImages = useCallback(() => {
+    clearTimeout(imageSyncTimer.current);
+    imageSyncTimer.current = 0;
     const st = stageRef.current;
     const { x, y, s } = cam.current;
-    g.setAttribute(
-      "transform",
-      `translate(${st.x + st.w / 2} ${st.y + st.h / 2}) scale(${s}) translate(${-x} ${-y})`,
-    );
-    g.style.setProperty("--px", `${1 / s}px`);
-    const key = labelBase
-      .map((b) => (s * b > LABEL_ZOOM_PX ? "1" : "0"))
-      .join("");
-    if (key !== labelKeyRef.current) {
-      labelKeyRef.current = key;
-      setLabelKey(key);
-    }
-
     const nextImages = new Map();
     const screenX = st.x + st.w / 2;
     const screenY = st.y + st.h / 2;
@@ -322,9 +317,50 @@ export default function Formation({
       imageHrefsRef.current = nextImages;
       setImageHrefs(nextImages);
     }
-  }, [labelBase, imageNodes, initialImageIds, selectedId]);
+  }, [imageNodes, initialImageIds, selectedId]);
+
+  const scheduleImageSync = useCallback(() => {
+    if (imageSyncTimer.current) clearTimeout(imageSyncTimer.current);
+    imageSyncTimer.current = window.setTimeout(() => {
+      imageSyncTimer.current = 0;
+      syncImages();
+    }, 120);
+  }, [syncImages]);
+
+  const apply = useCallback(() => {
+    const g = camGroupRef.current;
+    if (!g) return;
+    const st = stageRef.current;
+    const { x, y, s } = cam.current;
+    g.setAttribute(
+      "transform",
+      `translate(${st.x + st.w / 2} ${st.y + st.h / 2}) scale(${s}) translate(${-x} ${-y})`,
+    );
+    g.style.setProperty("--px", `${1 / s}px`);
+    const key = labelBase
+      .map((b) => (s * b > LABEL_ZOOM_PX ? "1" : "0"))
+      .join("");
+    if (key !== labelKeyRef.current) {
+      labelKeyRef.current = key;
+      setLabelKey(key);
+    }
+
+    if (st.w <= 767) scheduleImageSync();
+    else syncImages();
+  }, [labelBase, scheduleImageSync, syncImages]);
 
   const setBlur = useCallback((v) => {
+    if (
+      window.matchMedia?.("(max-width: 767px), (pointer: coarse)").matches
+    ) {
+      blur.current = 0;
+      const svg = svgRef.current;
+      if (svg) {
+        svg.style.filter = "";
+        svg.style.opacity = "";
+      }
+      return;
+    }
     blur.current = v;
     const svg = svgRef.current;
     if (!svg) return;
@@ -402,7 +438,14 @@ export default function Formation({
     apply,
   ]);
 
-  useEffect(() => () => cancelAnimationFrame(flight.current), []);
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(flight.current);
+      cancelAnimationFrame(panFrame.current);
+      clearTimeout(imageSyncTimer.current);
+    },
+    [],
+  );
 
   // Drag to pan, wheel to zoom
   useEffect(() => {
@@ -414,6 +457,8 @@ export default function Formation({
       if (e.button !== 0) return;
       initialView.current = false;
       cancelAnimationFrame(flight.current);
+      cancelAnimationFrame(panFrame.current);
+      pendingCamera.current = null;
       setBlur(0);
       start = {
         px: e.clientX,
@@ -434,12 +479,20 @@ export default function Formation({
         svg.classList.add("is-grabbing");
       }
       if (dragged.current) {
-        cam.current = {
+        pendingCamera.current = {
           ...cam.current,
           x: start.x - dx / cam.current.s,
           y: start.y - dy / cam.current.s,
         };
-        apply();
+        if (!panFrame.current) {
+          panFrame.current = requestAnimationFrame(() => {
+            panFrame.current = 0;
+            if (!pendingCamera.current) return;
+            cam.current = pendingCamera.current;
+            pendingCamera.current = null;
+            apply();
+          });
+        }
       }
     };
     const up = (e) => {
@@ -556,8 +609,10 @@ export default function Formation({
   const anyLabels = labelKey.includes("1");
   const nodeLabelVisible = useCallback(
     (n) =>
-      labelKey[n.slot] === "1" || n.id === hoveredId || n.id === selectedId,
-    [labelKey, hoveredId, selectedId],
+      (stage.w > 767 && labelKey[n.slot] === "1") ||
+      n.id === hoveredId ||
+      n.id === selectedId,
+    [stage.w, labelKey, hoveredId, selectedId],
   );
   const visibleLabelNodes = useMemo(
     () => nodes.filter(nodeLabelVisible),
@@ -851,8 +906,12 @@ export default function Formation({
                     "--hl": isActive ? activeColor || undefined : undefined,
                   }}
                   onClick={(e) => pickLayer(ring.key, e)}
-                  onPointerEnter={() => setHoverLayer(ring.key)}
-                  onPointerLeave={() => setHoverLayer(null)}
+                  onPointerEnter={(e) => {
+                    if (e.pointerType !== "touch") setHoverLayer(ring.key);
+                  }}
+                  onPointerLeave={(e) => {
+                    if (e.pointerType !== "touch") setHoverLayer(null);
+                  }}
                 >
                   <textPath
                     href={`#layer-arc-${dom(ring.key)}`}
@@ -925,8 +984,12 @@ const Node = memo(function Node({
     <g
       className={`node${hovered ? " is-hover" : ""}${selected ? " is-selected" : ""}${data.isPlaceholder ? " is-empty" : ""}`}
       data-node={n.id}
-      onPointerEnter={() => onHover(n.id)}
-      onPointerLeave={() => onHover(null)}
+      onPointerEnter={(e) => {
+        if (e.pointerType !== "touch") onHover(n.id);
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType !== "touch") onHover(null);
+      }}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(n.id);

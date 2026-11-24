@@ -720,6 +720,20 @@
         "image": "/images/demo/basil.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኦስዮስ ዘቆርዶባ",
+        "subtitle": "",
+        "image": "/images/demo/hosius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኒቆላዎስ ዘሜራ",
+        "subtitle": "",
+        "image": "/images/demo/nicholas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   }
