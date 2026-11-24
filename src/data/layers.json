@@ -627,6 +627,49 @@
         "image": "/images/demo/herodion.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሶሲጳጥሮስ",
+        "subtitle": "",
+        "image": "/images/demo/sosipater.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሉክዮስ ሊቀ ጳጳስ ወሰማዕት",
+        "subtitle": "",
+        "image": "/images/demo/luciuss.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ተርጥዮስ",
+        "subtitle": "",
+        "image": "/images/demo/tertius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት ኤንያ ሃዋርያዊት",
+        "subtitle": "",
+        "image": "/images/demo/junia.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ እንድራኒቆስ",
+        "subtitle": "",
+        "image": "/images/demo/andronicus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+
+      {
+        "name": "ቅዱስ አስጣኪዮስ",
+        "subtitle": "",
+        "image": "/images/demo/sachys.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
