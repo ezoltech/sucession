@@ -550,6 +550,62 @@
         "image": "/images/demo/epap.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኢያሶን",
+        "subtitle": "",
+        "image": "/images/demo/jason.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኤራስጦስ",
+        "subtitle": "",
+        "image": "/images/demo/erastus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ቁአርጥስ",
+        "subtitle": "",
+        "image": "/images/demo/quartus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አስገንቅሪጦስ",
+        "subtitle": "",
+        "image": "/images/demo/asyncritus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ፍሌጎንታ",
+        "subtitle": "",
+        "image": "/images/demo/phelgon.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሄርማን",
+        "subtitle": "",
+        "image": "/images/demo/hermes.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጳጥሮባስ",
+        "subtitle": "",
+        "image": "/images/demo/patrobas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሄርሜን",
+        "subtitle": "",
+        "image": "/images/demo/hermas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
