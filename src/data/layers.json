@@ -374,6 +374,132 @@
         "image": "/images/demo/silas.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ በርናባስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/baranabas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ቲቶ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/titus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ፊልሞና ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/philemon.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ቀሌምንጦስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/celement.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ዘኬዎስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/zaccheus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ቆርነሌዎስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/cornelius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ቴዎፍሎስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/theophilius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኤውዴዎስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/evodius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አግናጤዎስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/ignatius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሃናንያ ሃዋርያ (ዘአጥመቀ ለቅዱስ ጳውሎስ ሃዋርያ)",
+        "subtitle": "",
+        "image": "/images/demo/annanias.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ማልኮስ",
+        "subtitle": "",
+        "image": "/images/demo/malachus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አርሳጢስ",
+        "subtitle": "",
+        "image": "/images/demo/arsatis.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አስተራትዮስ",
+        "subtitle": "",
+        "image": "/images/demo/asterius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጋይዮስ",
+        "subtitle": "",
+        "image": "/images/demo/gaius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሉክዮስ",
+        "subtitle": "",
+        "image": "/images/demo/lucius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ድዮናስዮስ",
+        "subtitle": "",
+        "image": "/images/demo/dionasius.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አናሲሞስ",
+        "subtitle": "",
+        "image": "/images/demo/onesimus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ አኪላስ",
+        "subtitle": "",
+        "image": "/images/demo/aquila.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
