@@ -500,6 +500,35 @@
         "image": "/images/demo/aquila.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ንኪትስ",
+        "subtitle": "",
+        "image": "/images/demo/nikitas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ክርስቶፎሮስ",
+        "subtitle": "",
+        "image": "/images/demo/christopher.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+
+      {
+        "name": "ቅዱስ ዮሴፍ ዘአርማትያ",
+        "subtitle": "",
+        "image": "/images/demo/joseph.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኒቆዲሞስ",
+        "subtitle": "",
+        "image": "/images/demo/nicodemus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
