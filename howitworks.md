@@ -114,20 +114,21 @@ orientation-corrected WebP variants at 256px, 384px, and 1024px maximum dimensio
 generated files live under `public/images/optimized/`, which is ignored by Git and regenerated
 automatically by the `predev` and `prebuild` npm lifecycle scripts. Keep the original JPEG, JPG, or
 PNG source in `public/images/`; do not hand-edit the generated variants.
+While the dev server is running, a missing optimized variant is generated from its source image on
+the first request, so adding a new image does not require restarting the server.
 
 After Vite builds, `scripts/clean-build-images.js` removes only the copied JPEG/PNG source files
 from `dist/`; the originals remain untouched in `public/images/`. The optimized WebP files are the
 only raster versions sent with the production site.
 
-The panel uses the 384px version. The initial stage view frames the centre and its first ring, and
-attaches the centre portrait and first-ring portraits using their 256px variants. This keeps the
-opening view useful without loading every image in the 459-circle formation. Other portraits remain
-deferred: the stage requests the 1024px version only when an image-bearing circle is selected or
-reaches at least 48 CSS pixels in diameter inside the visible stage. Once shown, a portrait stays in
-the session's seen-image set and uses its smaller 256px version when zoomed back below that size.
-Seen images are attached only while inside the stage, and browsers can reuse their cached variants
-when panning back. Remote images are left as-is and are subject to their host's availability and
-caching.
+The panel uses the 384px version. The initial stage view frames the centre and its first three rings. Image-bearing members in those
+rings use their 256px variants; other portraits remain deferred. This keeps the opening view useful
+without loading every image in the 459-circle formation. The stage requests the 1024px version only
+when another image-bearing circle is selected or reaches at least 48 CSS pixels in diameter inside
+the visible stage. Once shown, a portrait stays in the session's seen-image set and uses its smaller
+256px version when zoomed back below that size. Seen images are attached only while inside the
+stage, and browsers can reuse their cached variants when panning back. Remote images are left as-is
+and are subject to their host's availability and caching.
 
 The SVG scene still contains all circle positions so that navigation and layer geometry are
 immediately available, but expensive label paths and per-thread DOM elements are not duplicated for

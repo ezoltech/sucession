@@ -208,18 +208,32 @@ export default function Formation({
     () => rings.find((ring) => ring.group === "c") ?? null,
     [rings],
   );
+  const initialRings = useMemo(
+    () =>
+      rings.filter(
+        (ring) => ring.group === "c" && ring.layer <= 3,
+      ),
+    [rings],
+  );
+  const initialRingKeys = useMemo(
+    () => new Set(initialRings.map((ring) => ring.key)),
+    [initialRings],
+  );
   const initialImageIds = useMemo(
     () =>
       new Set(
         imageNodes
-          .filter((node) => node.id === "c" || node.ring === firstRing?.key)
+          .filter(
+            (node) => node.id === "c" || initialRingKeys.has(node.ring),
+          )
           .map((node) => node.id),
       ),
-    [imageNodes, firstRing],
+    [imageNodes, initialRingKeys],
   );
-  const initialExtent = firstRing
-    ? firstRing.R + firstRing.r
-    : (nodes.find((node) => node.id === "c")?.r ?? extent);
+  const centerRadius = nodes.find((node) => node.id === "c")?.r ?? 0;
+  const initialExtent = initialRings.length
+    ? Math.max(centerRadius, ...initialRings.map((ring) => ring.R + ring.r))
+    : (centerRadius || extent);
   // Circle radius (world units) that decides when a layer's labels appear. Capped at NODE_R, so
   // layers with normal-sized circles behave exactly as before; small circles just need more zoom.
   const labelBase = useMemo(() => slots.map((s) => s.base), [slots]);

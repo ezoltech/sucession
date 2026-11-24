@@ -11,7 +11,8 @@ npm run dev
 ```
 
 Local JPEG/PNG images can stay in `public/images/`; optimized WebP variants are generated
-automatically for development and production builds.
+automatically for development and production builds. New images added while the dev server is
+running are optimized on their first request.
 
 ## Configure the formation
 

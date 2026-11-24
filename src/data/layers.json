@@ -283,6 +283,20 @@
         "image": "/images/demo/helena.jpg",
         "description": ["First paragraph", "Second"],
         "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት አንጦልያ (ሉክያ)",
+        "subtitle": "",
+        "image": "/images/demo/anatolia.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅድስት አሞን ሶፍያ",
+        "subtitle": "",
+        "image": "/images/demo/sophiam.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
       }
     ]
   },
@@ -290,7 +304,78 @@
     "name": "፸፪ቱ አርድዕት ",
     "circles": 72,
     "description": "",
-    "members": []
+    "members": [
+      {
+        "name": "ቅዱስ እስጢፋኖስ ሊቀ ዲያቆናት ወ ቀዳሜ ሰማዕት ",
+        "subtitle": "",
+        "image": "/images/demo/stephen.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጵሮኮሮስ",
+        "subtitle": "",
+        "image": "/images/demo/prochororus.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ኒቃሮና",
+        "subtitle": "",
+        "image": "/images/demo/nicaron.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጢሞና",
+        "subtitle": "",
+        "image": "/images/demo/timon.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጰርሚና",
+        "subtitle": "",
+        "image": "/images/demo/parmenas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ማርቆስ ወንጌላዊ",
+        "subtitle": "",
+        "image": "/images/demo/mark.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሉቃስ ወንጌላዊ",
+        "subtitle": "",
+        "image": "/images/demo/luke.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ብርሃነ አለም ወልሳነ ዕፍረት ቅዱስ ጳውሎስ",
+        "subtitle": "",
+        "image": "/images/demo/paul.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ጢሞቴዎስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/timothy.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      },
+      {
+        "name": "ቅዱስ ሲላስ ሃዋርያ",
+        "subtitle": "",
+        "image": "/images/demo/silas.jpg",
+        "description": ["First paragraph", "Second"],
+        "details": [{ "label": "Feast", "value": "June 29" }]
+      }
+    ]
   },
   {
     "name": "፫፻፲፰ቱ ርቱዐነ ሃይማኖት",
