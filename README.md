@@ -1,159 +1,104 @@
 # The Succession
 
-A radial archive in the style of the reference video: one fixed circle at the centre, with any number of concentric layers of circles around it. Hover a circle to read its name. Click it and the camera flies in with a motion-blur zoom, and the side panel switches to that circle's details.
+[![Star on GitHub](https://img.shields.io/badge/GitHub-Star%20this%20project-c25e09?style=flat-square&logo=github)](https://github.com/ezoltech/sucession/)
 
-For the full architecture, data flow, controls, and image-performance behavior, see
-[howitworks.md](./howitworks.md).
+**The Succession** is an interactive, zoomable radial archive built to visualize **Ethiopian Orthodox Tewahedo Church (EOTC)** Christology, apostolic succession, and saint commemoration around a central Christological core.
+
+One fixed circle sits at the center—**Our Lord, God, and Savior Jesus Christ**—surrounded by concentric rings of His Apostles, the 36 Holy Women, the 72 Disciples, and the 318 Orthodox Fathers of Nicaea, framed by a symmetrical four-arm cross representing the Prophets, the Virgin Mary, Monastic Fathers, and Martyrs.
+
+Hover any circle to reveal its curved Ge'ez/Amharic label, click to smoothly zoom in with logarithmic camera flight and motion blur, and explore each saint's Synaxarium feast days, hagiography, and scriptural witness in the side panel.
+
+> **Preview Screenshot:** *(To be added after capturing the live app screenshot — e.g. `./docs/screenshot.png`)*
+
+---
+
+## What the Archive Covers
+
+The checked-in configuration renders **459 circles** across a central radial group (**439 circles**) and a four-arm cross (**20 circles**):
+
+### Center Circle (`src/data/circles.json`)
+* **እግዚእነ ወአምላክነ ወመድሃኒነ ኢየሱስ ክርስቶስ (Jesus Christ):** Includes Ge'ez passages from the Gospels (John 1:1–14, John 3:13–16) and Pauline Epistles (1 Timothy 3:16), a Ge'ez summary of His salvific economy (*ነገረ ድኅነት*) from the Ethiopian Synaxarium and Liturgy, and the **9 Major Feasts** (`፱ቱ ዓበይት በዓላት`) and **9 Minor Feasts** (`፱ቱ ንኡሳን በዓላት`) of the Lord alongside monthly commemorations (`በ፳፱`).
+
+### Concentric Center Layers (`src/data/layers.json`)
+1. **Layer 1 — `፲፪ቱ ሃዋርያት ቅዱሳን` (The 12 Holy Apostles · 12 circles):** Complete Amharic biographies, individual feast days, and shared feasts (`ሰኔ ፳–፳፩`, `ሐምሌ ፭`) from `መጽሐፈ ስንክሳር`.
+2. **Layer 2 — `፴፮ቱ ቅዱሳት አንስት` (The 36 Holy Women · 36 circles):** Complete Amharic Synaxarium histories and feast days for the holy women who served Christ and the early Church (collectively commemorated on `የቅዱሳት አንስት ሰንበት`).
+3. **Layer 3 — `፸፪ቱ አርድዕት` (The 72 Disciples · 72 circles, 52 populated + 20 placeholders):** Includes the Seven Deacons, Evangelists St. Mark and St. Luke, St. Paul and his co-workers, and early apostolic bishops, with Amharic `መጽሐፈ ስንክሳር` feast dates, Romans 16 / Acts citations, and collective commemoration (`ሐምሌ ፬`).
+4. **Layer 4 — `፫፻፲፰ቱ ርቱዐነ ሃይማኖት` (The 318 Orthodox Fathers of Nicaea · 318 circles, 15 populated + 303 placeholders):** Key defender bishops of the First Council of Nicaea (325 A.D.), featuring both their collective Council feast (`ኅዳር ፱`) and individual Synaxarium repose days.
+
+### Cross Arms (`src/data/cross.json`)
+Four directional arms symmetrically linked to the center:
+* **Top (`ቅዱሳን ነቢያት አበዊነ`):** `አዳም አቡነ` (Adam) + 1 ring of 4 placeholders
+* **Right:** `እግዝእትነ ቅድስት በክልኤ ማርያም ወላዲተ አምላክ` (St. Mary, Mother of God) + 1 ring of 4 placeholders
+* **Bottom:** `ርዕሰ መነኮሳት አባ እንጦንስ ገዳማዊ` (St. Anthony the Great) + 1 ring of 4 placeholders
+* **Left:** `ሊቀ ሰማዕታት ማር ቅዱስ ጊዮርጊስ` (St. George) + 1 ring of 4 placeholders
+
+---
+
+## References & Sources Used
+
+* **Ethiopian Synaxarium (`መጽሐፈ ስንክሳር`):** Primary source for annual feast days (`ዓመታዊ በዓል`), martyrdom/repose accounts, translation of relics, and collective commemorations (`ኅዳር ፱`, `ሐምሌ ፬`, `ሐምሌ ፭`, `ሰኔ ፳–፳፩`).
+* **Holy Bible (Ge'ez & Amharic — `መጽሐፍ ቅዱስ`):**
+  * Gospels of John (`ዮሐ. ፩፥፩–፲፬`, `ዮሐ. ፫፥፲፫–፲፮`) and Mark (`ማር. ፲፭፥፳፩`), Luke (`ሉቃ. ፲፥፩`)
+  * Acts of the Apostles (`ሐዋ. ፮`, `ሐዋ. ፱`, `ሐዋ. ፲፫`, `ሐዋ. ፲፯`, `ሐዋ. ፳`)
+  * Pauline Epistles (`ሮሜ ፲፮`, `ፊል. ፪`, `፩ ጢሞ. ፫፥፲፮`, `ወደ ፊልሞና`)
+* **Ethiopic Liturgy & Patristic Tradition:** Anaphora commemorations (`ጸሎተ ቅዳሴ`), the Nicene Creed (`ጸሎተ ሃይማኖት`, Council of Nicaea 325 A.D.), and the *Ethiopic Didascalia* / Apostolic Constitutions (`ዲዳስቅልያ`) for early episcopal sees of the Seventy Disciples.
+* **Coptic & Eastern Orthodox Synaxaria:** Cross-referenced (using the shared Alexandrian/Ethiopian calendar mapping) for early apostolic disciples whose individual feast days are preserved in wider Orthodox tradition.
+
+---
+
+## Features & Controls
+
+* **Interactive SVG Camera:** Drag to pan, scroll to zoom around the cursor, and click any circle or ring to trigger a smooth logarithmic camera flight (`src/components/Formation.jsx`).
+* **Curved Typography & Sacred Geometry:** Each layer weaves connecting thread circles to its predecessor ring; labels curve around each circle and dynamically measure web-font widths to fit.
+* **Search & Navigation Rail:** Multi-word, diacritic-folded search (`searchFormation`), group cross switcher (`Rail.jsx`), breadcrumb history, and previous/next circle or layer paging (`Panel.jsx`).
+* **Themes & Modes:** Light (parchment) and Dark (obsidian with metallic gold/silver gradients) themes, foldable sidebar (`S`), replay intro animation, and fullscreen immersive mode (`Esc` to exit/reset), plus a quick **Star on GitHub** action in the top-right bar.
+* **Responsive Image Pipeline:** Local `.jpg`/`.png` artwork in `public/images/` is automatically converted via `sharp` (`scripts/optimize-images.js`) into `256px`, `384px`, and `1024px` `.webp` variants and lazily loaded based on viewport visibility and zoom level.
+
+---
+
+## Getting Started
 
 ```bash
 npm install
 npm run dev
 ```
 
-Local JPEG/PNG images can stay in `public/images/`; optimized WebP variants are generated
-automatically for development and production builds. New images added while the dev server is
-running are optimized on their first request.
+* `npm run dev` — generates optimized WebP variants and starts the Vite development server.
+* `npm run build` — optimizes images, builds the static bundle into `dist/`, and cleans raw source image copies from `dist/`.
+* `npm run lint` — runs ESLint across the codebase.
 
-## Configure the formation
+For full architectural details, geometry math, and performance notes, see [howitworks.md](./howitworks.md).
 
-Everything is driven by four JSON files in `src/data/`.
+---
 
-### 1. `layers.json`: how many layers, and how many circles in each
+## Configuring the Formation
 
-One entry per layer, from the inside out. The centre circle always exists and is not listed here.
+All content and ring geometry are driven by four JSON files in `src/data/`:
 
-```json
-[
-  { "name": "First Heirs", "circles": 3 },
-  { "name": "Second Heirs", "circles": 6, "rotation": 30 }
-]
-```
-
-| key        | required | meaning                                                                    |
-| ---------- | -------- | -------------------------------------------------------------------------- |
-| `circles`  | yes      | number of circles on this layer                                            |
-| `name`     | no       | label shown in the rail and panel (defaults to "Layer N")                  |
-| `rotation` | no       | degrees to rotate the layer clockwise (the first circle sits at 12 o'clock) |
-| `size`     | no       | circle radius for this layer (default 38; the centre is 64)                |
-| `radius`   | no       | force the ring radius (by default it is computed so nothing overlaps)      |
-
-To add a layer, add another object. For example, `{ "circles": 12 }` adds a third ring of 12.
-
-### 2. `circles.json`: the content of each circle
-
-`center` holds the middle circle. `layers` is an array of arrays that follows the same order as `layers.json`: the first array holds layer 1's circles, the second holds layer 2's, and so on. Circles in each array run clockwise from 12 o'clock.
-
-```json
-{
-  "center": { "title": "...", "subtitle": "...", "image": "/images/...", "description": ["..."] },
-  "layers": [
-    [ { ... }, { ... }, { ... } ],
-    [ { ... }, { ... }, { ... }, { ... }, { ... }, { ... } ]
-  ]
-}
-```
-
-| key             | meaning                                                                                          |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| `title`         | name curved under the circle and shown as the panel heading                                      |
-| `subtitle`      | second curved line (collector, artist and so on), shown after "In the collection of"            |
-| `subtitleLabel` | optional replacement for "In the collection of"                                                  |
-| `image`         | path in `public/` (for example `/images/me.jpg`) or a full URL. It is cropped to a circle.       |
-| `color`         | background shown behind the image while it loads                                                |
-| `description`   | a string, or an array of strings for several paragraphs                                          |
-| `details`       | optional rows: `[{ "label": "Year", "value": "2024" }]`                                          |
-
-If a layer has more circles than entries, the extra circles render as empty dashed placeholders. Extra entries are ignored. In dev mode a console warning tells you which layer doesn't match.
-
-### 3. `cross.json`: the four circles around the centre
-
-The whole formation is a big cross: the centre group in the middle, and one more circle straight above, below, left and right of it, each joined to the centre by a straight line. The four circles sit perfectly on the axes, at exactly the same distance.
-
-Each of the four is written the same way, top to bottom: **the circle → its layers → how many circles each layer has → the details of each circle.**
-
-```json
-{
-  "gap": 0.5,
-  "size": 0.7,
-  "arms": {
-    "top": {
-      "name": "Top",
-      "center": { "title": "Top centre", "subtitle": "", "image": "", "description": [], "details": [] },
-      "layers": [
-        {
-          "name": "",
-          "circles": 0,
-          "description": "",
-          "members": []
-        }
-      ]
-    },
-    "right": { … same shape … },
-    "bottom": { … },
-    "left": { … }
-  }
-}
-```
-
-| key       | meaning                                                                                                                      |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `gap`     | free thread between the rim of the centre group and the rim of an arm, as a fraction of the two sizes added together (default 0.4) |
-| `size`    | radius of an arm's circle as a fraction of the middle circle's (default 0.7). An arm may set its own `size` too              |
-| `name`    | label for the circle (rail, search, panel)                                                                                   |
-| `center`  | the circle itself. Same fields as `center` in `circles.json`                                                                 |
-| `layers`  | its rings, from the inside out. Same format as `layers.json`                                                                  |
-
-Inside a layer:
-
-| key           | meaning                                                                                                              |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `circles`     | **how many circles** this layer has. `0` means the layer is not drawn                                                 |
-| `members`     | **the details of each circle**, one object per circle, in clockwise order from 12 o'clock (same fields as in `layers.json`) |
-| `name`, `description` | optional, for the layer itself                                                                         |
-
-Each layer you add is another ring further out. For example, a right circle with a ring of 6 (two of them filled in) and a ring of 12:
-
-```json
-"layers": [
-  {
-    "name": "First ring",
-    "circles": 6,
-    "members": [
-      { "name": "Anna", "subtitle": "…", "image": "/images/…", "description": ["…"], "details": [] },
-      { "name": "Ben" }
-    ]
-  },
-  { "name": "Second ring", "circles": 12, "members": [] }
-]
-```
-
-Circles without a matching entry in `members` are drawn as empty placeholders, so you can raise `circles` first and fill in details later. Delete the layer (or set `circles` to `0`) and the arm goes back to a single circle.
-
-**The threads follow the pattern.** The four circles sit at `(centre size + biggest arm size) × (1 + gap)` from the middle, so the thread joining each one to the centre gets longer whenever a circle is added to the centre or to any of the four, and shorter when one is removed. All four stay at the same distance, so the cross always stays symmetrical and the links stay straight. To go back to the plain single formation, drop the `cross` argument from the `buildFormation(...)` call in `App.jsx`.
-
-### 4. `site.json`: brand and overview text
-
-This file holds the brand name, the collection title and owner, the intro stanzas and the notes shown in the panel when nothing is selected.
-
-## Controls
-
-- **Hover** shows the circle's curved label.
-- **Click** zooms into the circle. Click empty space or press **Esc** to fly back out.
-- **← / →** (or the panel's footer) moves to the previous or next circle, going centre first and then each layer clockwise.
-- **Drag** pans and **scroll** zooms.
-- The little cross in the rail jumps between the centre and the four arms; the chapters below it list the layers of the group you are in.
-- The rail jumps to a layer. **Replay** re-runs the intro, and the **›‹** button in the panel collapses it.
+* [`src/data/layers.json`](./src/data/layers.json) — concentric rings (`name`, `circles`, `rotation`, `size`, `radius`, `description`, `members`).
+* [`src/data/circles.json`](./src/data/circles.json) — center circle (`center`) and fallback per-layer content.
+* [`src/data/cross.json`](./src/data/cross.json) — four directional cross arms (`top`, `right`, `bottom`, `left`) and optional `outer` ring.
+* [`src/data/site.json`](./src/data/site.json) — brand title, overview copy, and sidebar notes.
 
 ## Structure
 
-```
+```text
 src/
   data/            layers.json, circles.json, cross.json, site.json
-  lib/formation.js ring layout math (radii, angles, spacing) and the cross: buildGroup (one centre + its layers) and buildFormation (centre + 4 arms + links)
-  lib/easing.js    cubic-bezier easing (the reference site's motion tokens)
+  lib/
+    formation.js   ring layout math, cross/thread geometry, colors, and search
+    easing.js      cubic-bezier motion tokens
+    images.js      responsive WebP URL resolver
   components/
-    Formation.jsx  SVG stage: camera, motion blur, orbits, curved labels, intro
-    Panel.jsx      details panel
-    Rail.jsx       left navigation rail
-public/images/demo demo artwork (replace with your own)
+    Formation.jsx  SVG stage, camera flight, motion blur, curved labels, lazy images
+    Panel.jsx      search, minimap, details view, layer member list, paging
+    Rail.jsx       cross group switcher, layer chapters, overview/replay/fullscreen
+scripts/
+  optimize-images.js     Sharp WebP generator (256px / 384px / 1024px)
+  clean-build-images.js  strips raw source images from dist/ after build
+public/images/demo/      artwork assets
 ```
+
+---
+
+If you find this archive helpful, please consider giving it a star on GitHub: **[github.com/ezoltech/sucession](https://github.com/ezoltech/sucession/)**

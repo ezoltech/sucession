@@ -20,14 +20,36 @@ const MOBILE = "(max-width: 767px)";
 const COLLAPSED_W = 44; // matches --collapsed-w in index.css
 const THEME_KEY = "succession-theme";
 
-// light is the default; the last choice is remembered
+// dark is the default; the last choice is remembered
 const readTheme = () => {
   try {
-    return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === "light") return "light";
+    return "dark";
   } catch {
-    return "light";
+    return "dark";
   }
 };
+
+function StarIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      className="github-icon"
+    >
+      <path
+        d="M8 1.4l2.02 4.1 4.53.66-3.28 3.2.77 4.51L8 11.74l-4.04 2.13.77-4.51-3.28-3.2 4.53-.66L8 1.4Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 function SunIcon() {
   return (
@@ -137,7 +159,10 @@ export default function App() {
   const [immersive, setImmersive] = useState(false);
   const [folded, setFolded] = useState(false); // whole sidebar (rail + panel) folded away, only the round arrow left
   const [theme, setTheme] = useState(readTheme); // "light" | "dark"
+  const [centerLang, setCenterLang] = useState("geez"); // "geez" | "amharic" — only for the centre circle
   const [introKey, setIntroKey] = useState(0);
+  const [loadProgress, setLoadProgress] = useState(0); // 0 → 1
+  const [loadDone, setLoadDone] = useState(false);
   const railRef = useRef(null);
   const panelRef = useRef(null);
   const stage = useStage(railRef, panelRef, collapsed, immersive, folded);
@@ -269,6 +294,31 @@ export default function App() {
     document.title = `${title} · ${site.brand}`;
   }, [selected, layer]);
 
+  // ───── Image preload: fills the loading bar as images resolve ─────
+  useEffect(() => {
+    const images = formation.nodes
+      .filter((n) => n.data.image)
+      .map((n) => n.data.image);
+    if (!images.length) {
+      setLoadProgress(1);
+      setLoadDone(true);
+      return;
+    }
+    let loaded = 0;
+    const total = images.length;
+    const tick = () => {
+      loaded++;
+      setLoadProgress(loaded / total);
+      if (loaded >= total) setTimeout(() => setLoadDone(true), 400);
+    };
+    images.forEach((src) => {
+      const img = new Image();
+      img.onload = tick;
+      img.onerror = tick;
+      img.src = src;
+    });
+  }, [formation]);
+
   return (
     <div
       className={`app${hoveredId ? " is-hovering" : ""}${immersive ? " is-immersive" : ""}${folded ? " is-folded" : ""}`}
@@ -321,6 +371,8 @@ export default function App() {
           prevLayer={prevLayer}
           nextLayer={nextLayer}
           collapsed={collapsed}
+          centerLang={centerLang}
+          onToggleLang={() => setCenterLang((l) => (l === "geez" ? "amharic" : "geez"))}
           onToggle={() => setCollapsed((c) => !c)}
           onSelect={select}
           onSelectLayer={selectLayer}
@@ -355,48 +407,62 @@ export default function App() {
         </button>
       </div>
 
-      <button
-        type="button"
-        className="theme-btn"
-        onClick={toggleTheme}
-        aria-label={
-          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-        }
-        title={
-          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-        }
-      >
-        {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-        <span>{theme === "dark" ? "Light" : "Dark"}</span>
-      </button>
+      <div className="chrome-actions">
+        <a
+          href="https://github.com/ezoltech/sucession/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="github-btn"
+          aria-label="Star this project on GitHub"
+          title="Star this project on GitHub"
+        >
+          <StarIcon />
+          <span>Star on GitHub</span>
+        </a>
 
-      <button
-        type="button"
-        className="fs-btn"
-        onClick={toggleFullscreen}
-        aria-label={immersive ? "Exit full screen" : "Enter full screen"}
-        aria-pressed={immersive}
-      >
-        {immersive ? (
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-            <path
-              d="M5 1v4H1M15 5h-4V1M11 15v-4h4M1 11h4v4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.2"
-            />
-          </svg>
-        ) : (
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-            <path
-              d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.2"
-            />
-          </svg>
-        )}
-      </button>
+        <button
+          type="button"
+          className="theme-btn"
+          onClick={toggleTheme}
+          aria-label={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+          title={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+        >
+          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+          <span>{theme === "dark" ? "Light" : "Dark"}</span>
+        </button>
+
+        <button
+          type="button"
+          className="fs-btn"
+          onClick={toggleFullscreen}
+          aria-label={immersive ? "Exit full screen" : "Enter full screen"}
+          aria-pressed={immersive}
+        >
+          {immersive ? (
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M5 1v4H1M15 5h-4V1M11 15v-4h4M1 11h4v4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
 
       <p className="hint" aria-hidden="true">
         {immersive
@@ -409,6 +475,19 @@ export default function App() {
               ? "← → to move · esc to return"
               : "hover to read · click to enter"}
       </p>
+
+      {/* Loading bar: thin bar across the centre of the screen, matches theme */}
+      {!loadDone && (
+        <div className="load-overlay">
+          <div className="load-bar-track">
+            <div
+              className="load-bar-fill"
+              style={{ transform: `scaleX(${loadProgress})` }}
+            />
+          </div>
+          <span className="load-pct">{Math.round(loadProgress * 100)}%</span>
+        </div>
+      )}
     </div>
   );
 }

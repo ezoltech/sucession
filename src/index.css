@@ -822,11 +822,17 @@ button.token:hover {
 }
 
 /* ───────── Chrome ───────── */
-.fs-btn {
+.chrome-actions {
   position: absolute;
-  top: 18px;
+  top: 14px;
   right: 18px;
   z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fs-btn {
   color: var(--text-medium);
   padding: 6px;
   transition: color 150ms var(--ease-settle);
@@ -1489,12 +1495,9 @@ button.token:hover {
   }
 }
 
-/* ───────── Light / dark mode switch (top of the screen) ───────── */
+/* ───────── Top-right pills: GitHub Star & Light / dark mode switch ───────── */
+.github-btn,
 .theme-btn {
-  position: absolute;
-  top: 14px;
-  right: 58px;
-  z-index: 40;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1506,6 +1509,7 @@ button.token:hover {
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  text-decoration: none;
   color: var(--text-primary);
   background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
   border: 0.8px solid var(--border-strong);
@@ -1513,12 +1517,24 @@ button.token:hover {
   backdrop-filter: blur(10px);
   transition:
     background 150ms var(--ease-settle),
+    border-color 150ms var(--ease-settle),
     transform 260ms var(--ease-goop);
 }
 
+.github-btn:hover,
 .theme-btn:hover {
   background: var(--surface-raised);
   transform: translateY(-1px);
+}
+
+.github-icon {
+  flex: none;
+  color: var(--accent-warm);
+  transition: transform 350ms var(--ease-goop);
+}
+
+.github-btn:hover .github-icon {
+  transform: rotate(22deg) scale(1.12);
 }
 
 .theme-icon {
@@ -1531,9 +1547,18 @@ button.token:hover {
 }
 
 @media (max-width: 767px) {
-  .theme-btn {
+  .chrome-actions {
     top: 10px;
-    right: 52px;
+    right: 12px;
+    gap: 6px;
+  }
+
+  .github-btn span {
+    display: none;
+  }
+
+  .github-btn {
+    padding: 0 10px;
   }
 }
 

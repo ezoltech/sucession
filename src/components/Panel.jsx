@@ -253,6 +253,8 @@ export default function Panel({
   prevLayer = null,
   nextLayer = null,
   collapsed,
+  centerLang = "geez",
+  onToggleLang,
   onToggle,
   onSelect,
   onSelectLayer,
@@ -262,6 +264,21 @@ export default function Panel({
   const isNode = !!selected;
   const isLayer = !isNode && !!layer;
   const d = selected?.data;
+  // Is the selected node the centre circle? (layer 0, group "c")
+  const isCentre = isNode && selected.layer === 0 && selected.group === "c";
+  // For the centre circle, resolve text based on language toggle
+  const centreTitle = isCentre
+    ? centerLang === "amharic" && d.titleAmharic ? d.titleAmharic : d.title
+    : null;
+  const centreSubtitle = isCentre
+    ? centerLang === "amharic" && d.subtitleAmharic ? d.subtitleAmharic : d.subtitle
+    : null;
+  const centreSubtitleLabel = isCentre
+    ? centerLang === "amharic" && d.subtitleLabelAmharic ? d.subtitleLabelAmharic : d.subtitleLabel
+    : null;
+  const centreDesc = isCentre
+    ? centerLang === "amharic" && d.descriptionAmharic ? d.descriptionAmharic : d.description
+    : null;
 
   const crossed = formation.groups.length > 1;
   // where a circle's own text lives, so the "no description yet" hint points at the right file
@@ -328,7 +345,9 @@ export default function Panel({
             className="panel-body"
           >
             <h2 className="panel-title">
-              {isNode ? d.title : isLayer ? layer.name : site.collectionTitle}
+              {isNode
+                ? (isCentre ? centreTitle : d.title)
+                : isLayer ? layer.name : site.collectionTitle}
             </h2>
             <p className="owner">
               {isLayer ? (
@@ -343,11 +362,13 @@ export default function Panel({
                 <>
                   <span className="owner-label">
                     {isNode
-                      ? d.subtitleLabel || site.ownerLabel
+                      ? (isCentre && centreSubtitleLabel ? centreSubtitleLabel : (d.subtitleLabel || site.ownerLabel))
                       : site.ownerLabel}
                   </span>{" "}
                   <span className="owner-name">
-                    {isNode ? d.subtitle || "Unassigned" : site.owner}
+                    {isNode
+                      ? (isCentre && centreSubtitle ? centreSubtitle : (d.subtitle || "Unassigned"))
+                      : site.owner}
                   </span>
                 </>
               )}
@@ -400,9 +421,27 @@ export default function Panel({
             {isNode ? (
               <>
                 <section className="notes">
+                  {isCentre && (
+                    <div className="lang-tabs">
+                      <button
+                        type="button"
+                        className={`lang-tab${centerLang === "geez" ? " is-active" : ""}`}
+                        onClick={() => centerLang !== "geez" && onToggleLang?.()}
+                      >
+                        ግዕዝ
+                      </button>
+                      <button
+                        type="button"
+                        className={`lang-tab${centerLang === "amharic" ? " is-active" : ""}`}
+                        onClick={() => centerLang !== "amharic" && onToggleLang?.()}
+                      >
+                        አማርኛ
+                      </button>
+                    </div>
+                  )}
                   <h3 className="section-label">Notes</h3>
-                  {d.description.length ? (
-                    d.description.map((p, i) => <p key={i}>{p}</p>)
+                  {(isCentre ? centreDesc : d.description).length ? (
+                    (isCentre ? centreDesc : d.description).map((p, i) => <p key={i}>{p}</p>)
                   ) : (
                     <p className="muted">
                       No description yet. Add one for this circle in {dataFile}.
